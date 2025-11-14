@@ -57,7 +57,7 @@ public class ComentarioService {
 
         Comentario nuevo = new Comentario();
         nuevo.setComentario(comentario.trim());
-        nuevo.setFechaRegistro(System.currentTimeMillis());
+        nuevo.setFechaRegistro(java.time.LocalDateTime.now());
         nuevo.setOculto(false);
         nuevo.setUsuarioId(usuarioId);
         nuevo.setPublicacionId(publicacionId);
@@ -83,7 +83,7 @@ public class ComentarioService {
                 .orElseThrow(() -> new RuntimeException("Comentario no encontrado ID: " + id));
 
         existente.setOculto(true);
-        existente.setFechaBaneo(System.currentTimeMillis());
+        existente.setFechaBaneo(java.time.LocalDateTime.now());
         if (motivoBaneo != null && !motivoBaneo.trim().isEmpty()) {
             existente.setMotivoBaneo(motivoBaneo.trim());
         }

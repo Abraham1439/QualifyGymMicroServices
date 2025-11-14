@@ -35,7 +35,7 @@ class ComentarioControllerTest {
         comentario.setComentario("Comentario de prueba");
         comentario.setPublicacionId(publicacionId);
         comentario.setUsuarioId(1L);
-        comentario.setFechaRegistro(System.currentTimeMillis());
+        comentario.setFechaRegistro(java.time.LocalDateTime.now());
         comentario.setOculto(false);
         
         List<Comentario> listaComentarios = List.of(comentario);

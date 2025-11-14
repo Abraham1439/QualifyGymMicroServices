@@ -37,7 +37,7 @@ class ComentarioServiceTest {
         guardado.setComentario(comentario);
         guardado.setUsuarioId(usuarioId);
         guardado.setPublicacionId(publicacionId);
-        guardado.setFechaRegistro(System.currentTimeMillis());
+        guardado.setFechaRegistro(java.time.LocalDateTime.now());
         guardado.setOculto(false);
 
         when(comentarioRepository.save(any(Comentario.class))).thenReturn(guardado);
