@@ -1,0 +1,46 @@
+package com.qualifygym.usuarios.controller;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.*;
+
+import com.qualifygym.usuarios.model.Rol;
+import com.qualifygym.usuarios.model.Usuario;
+import com.qualifygym.usuarios.service.UsuarioService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+
+@WebMvcTest(UsuarioController.class)
+@AutoConfigureMockMvc(addFilters = false)
+class UsuarioControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private UsuarioService usuarioService;
+
+    @Test
+    void getUsuarios_deberiaRetornarListaUsuariosYStatus200() throws Exception {
+        Rol rol = new Rol(1L, "Usuario", null);
+        Usuario usuario = new Usuario(1L, "usuario1", "pass123", "usuario1@qualifygym.com", rol);
+        List<Usuario> listaUsuarios = List.of(usuario);
+
+        when(usuarioService.obtenerUsuarios()).thenReturn(listaUsuarios);
+
+        mockMvc.perform(get("/api/v1/usuario/users")
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$[0].username").value("usuario1"))
+               .andExpect(jsonPath("$[0].email").value("usuario1@qualifygym.com"))
+               .andExpect(jsonPath("$[0].rol.nombre").value("Usuario"));
+    }
+}
+

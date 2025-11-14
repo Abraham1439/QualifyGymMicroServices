@@ -1,0 +1,97 @@
+package com.qualifygym.usuarios.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.qualifygym.usuarios.model.Rol;
+import com.qualifygym.usuarios.model.Usuario;
+import com.qualifygym.usuarios.repository.RoleRepository;
+import com.qualifygym.usuarios.repository.UsuarioRepository;
+
+import jakarta.transaction.Transactional;
+
+@Service
+@Transactional
+public class UsuarioService {
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public List<Usuario> obtenerUsuarios() {
+        return usuarioRepository.findAll();
+    }
+
+    public Usuario obtenerUsuarioPorId(Long id) {
+        return usuarioRepository.findById(id).orElse(null);
+    }
+
+    public Usuario crearUsuario(String username, String password, String email, Long roleId) {
+        if (usuarioRepository.existsByUsername(username)) {
+            throw new RuntimeException("El nombre de usuario ya existe: " + username);
+        }
+        if (usuarioRepository.existsByEmail(email)) {
+            throw new RuntimeException("El email ya está registrado: " + email);
+        }
+
+        Rol rol = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado ID:" + roleId));
+
+        Usuario nuevo = new Usuario();
+        nuevo.setUsername(username);
+        nuevo.setPassword(passwordEncoder.encode(password));
+        nuevo.setEmail(email);
+        nuevo.setRol(rol);
+        return usuarioRepository.save(nuevo);
+    }
+
+    public Usuario actualizarUsuario(Long id, String username, String password, String email, Long roleId) {
+        Usuario existente = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado ID:" + id));
+
+        if (username != null && !username.equals(existente.getUsername())) {
+            if (usuarioRepository.existsByUsername(username)) {
+                throw new RuntimeException("El nombre de usuario ya existe: " + username);
+            }
+            existente.setUsername(username);
+        }
+        if (password != null && !password.isEmpty()) {
+            existente.setPassword(passwordEncoder.encode(password));
+        }
+        if (email != null && !email.equals(existente.getEmail())) {
+            if (usuarioRepository.existsByEmail(email)) {
+                throw new RuntimeException("El email ya está registrado: " + email);
+            }
+            existente.setEmail(email);
+        }
+        if (roleId != null) {
+            Rol rol = roleRepository.findById(roleId)
+                    .orElseThrow(() -> new RuntimeException("Rol no encontrado ID:" + roleId));
+            existente.setRol(rol);
+        }
+        return usuarioRepository.save(existente);
+    }
+
+    public void eliminarUsuario(Long id) {
+        usuarioRepository.deleteById(id);
+    }
+
+    public Optional<Usuario> buscarPorUsername(String username) {
+        return usuarioRepository.findByUsername(username);
+    }
+
+    public boolean validarCredenciales(String username, String rawPassword) {
+        Optional<Usuario> opt = usuarioRepository.findByUsername(username);
+        return opt.isPresent() && passwordEncoder.matches(rawPassword, opt.get().getPassword());
+    }
+}
+
