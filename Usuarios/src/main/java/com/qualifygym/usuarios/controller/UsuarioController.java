@@ -95,14 +95,14 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> datos) {
         try {
-            String username = datos.get("username");
+            String email = datos.get("email");
             String password = datos.get("password");
 
-            if (username == null || password == null) {
-                return ResponseEntity.badRequest().body("Faltan campos 'username' o 'password'");
+            if (email == null || password == null) {
+                return ResponseEntity.badRequest().body("Faltan campos 'Email' o 'password'");
             }
 
-            boolean valido = usuarioService.validarCredenciales(username, password);
+            boolean valido = usuarioService.validarCredenciales(email, password);
             return valido
                 ? ResponseEntity.ok("Login exitoso")
                 : ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");

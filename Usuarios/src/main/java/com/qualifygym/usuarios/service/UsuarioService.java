@@ -89,8 +89,8 @@ public class UsuarioService {
         return usuarioRepository.findByUsername(username);
     }
 
-    public boolean validarCredenciales(String username, String rawPassword) {
-        Optional<Usuario> opt = usuarioRepository.findByUsername(username);
+    public boolean validarCredenciales(String email, String rawPassword) {
+        Optional<Usuario> opt = usuarioRepository.findByEmail(email);
         return opt.isPresent() && passwordEncoder.matches(rawPassword, opt.get().getPassword());
     }
 }
