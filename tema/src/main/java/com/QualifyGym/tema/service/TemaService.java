@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.QualifyGym.tema.client.EstadoClient;
 import com.QualifyGym.tema.model.Tema;
 import com.QualifyGym.tema.repository.TemaRepository;
 
@@ -17,6 +18,9 @@ public class TemaService {
     
     @Autowired
     private TemaRepository temaRepository;
+
+    @Autowired
+    private EstadoClient estadoClient;
 
     // Obtener todos los temas
     public List<Tema> obtenerTodosTemas() {
@@ -60,6 +64,11 @@ public class TemaService {
             throw new RuntimeException("El ID de estado es inválido");
         }
         
+        // Validar que el estado existe
+        if (!estadoClient.existeEstado(estadoId)) {
+            throw new RuntimeException("El estado con ID " + estadoId + " no existe");
+        }
+        
         // Verificar si ya existe un tema con el mismo nombre
         if (temaRepository.existsByNombreTema(nombreTema.trim())) {
             throw new RuntimeException("Ya existe un tema con el nombre: " + nombreTema);
@@ -86,6 +95,10 @@ public class TemaService {
         }
         
         if (estadoId != null && estadoId > 0) {
+            // Validar que el estado existe
+            if (!estadoClient.existeEstado(estadoId)) {
+                throw new RuntimeException("El estado con ID " + estadoId + " no existe");
+            }
             existente.setEstadoId(estadoId);
         }
 

@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.qualifygym.publicaciones.client.TemaClient;
+import com.qualifygym.publicaciones.client.UsuarioClient;
 import com.qualifygym.publicaciones.model.Publicacion;
 import com.qualifygym.publicaciones.repository.PublicacionRepository;
 
@@ -17,6 +19,12 @@ public class PublicacionService {
 
     @Autowired
     private PublicacionRepository publicacionRepository;
+
+    @Autowired
+    private UsuarioClient usuarioClient;
+
+    @Autowired
+    private TemaClient temaClient;
 
     // Obtener todas las publicaciones
     public List<Publicacion> obtenerTodasPublicaciones() {
@@ -74,6 +82,16 @@ public class PublicacionService {
         }
         if (temaId == null || temaId <= 0) {
             throw new RuntimeException("El ID de tema es inválido");
+        }
+
+        // Validar que el usuario existe
+        if (!usuarioClient.existeUsuario(usuarioId)) {
+            throw new RuntimeException("El usuario con ID " + usuarioId + " no existe");
+        }
+
+        // Validar que el tema existe
+        if (!temaClient.existeTema(temaId)) {
+            throw new RuntimeException("El tema con ID " + temaId + " no existe");
         }
 
         Publicacion nueva = new Publicacion();

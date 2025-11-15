@@ -24,8 +24,10 @@ public class SeguridadConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // Público
-                .requestMatchers("/api/v1/usuario/login", "/api/v1/usuario/users").permitAll()
+                // Público - endpoints para comunicación entre microservicios
+                .requestMatchers("/api/v1/usuario/login", 
+                                 "/api/v1/usuario/users",
+                                 "/api/v1/usuario/users/**").permitAll()
                 
                 // Swagger solo para rol "Administrador"
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**")

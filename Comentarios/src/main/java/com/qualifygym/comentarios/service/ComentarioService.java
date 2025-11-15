@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.qualifygym.comentarios.client.PublicacionClient;
+import com.qualifygym.comentarios.client.UsuarioClient;
 import com.qualifygym.comentarios.model.Comentario;
 import com.qualifygym.comentarios.repository.ComentarioRepository;
 
@@ -17,6 +19,12 @@ public class ComentarioService {
 
     @Autowired
     private ComentarioRepository comentarioRepository;
+
+    @Autowired
+    private UsuarioClient usuarioClient;
+
+    @Autowired
+    private PublicacionClient publicacionClient;
 
     // Obtener todos los comentarios
     public List<Comentario> obtenerTodosComentarios() {
@@ -53,6 +61,16 @@ public class ComentarioService {
         }
         if (publicacionId == null || publicacionId <= 0) {
             throw new RuntimeException("El ID de publicación es inválido");
+        }
+
+        // Validar que el usuario existe
+        if (!usuarioClient.existeUsuario(usuarioId)) {
+            throw new RuntimeException("El usuario con ID " + usuarioId + " no existe");
+        }
+
+        // Validar que la publicación existe
+        if (!publicacionClient.existePublicacion(publicacionId)) {
+            throw new RuntimeException("La publicación con ID " + publicacionId + " no existe");
         }
 
         Comentario nuevo = new Comentario();
