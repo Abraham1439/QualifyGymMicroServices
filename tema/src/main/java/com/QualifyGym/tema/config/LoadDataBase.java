@@ -24,9 +24,9 @@ public class LoadDataBase {
                 temaRepo.save(new Tema(null, "Recuperación", 1L));
                 temaRepo.save(new Tema(null, "Motivación", 1L));
 
-                System.out.println("✅ Temas iniciales creados");
+                System.out.println("Temas iniciales creados");
             } else {
-                System.out.println("ℹ️ Datos ya existen. No se cargaron nuevos datos.");
+                System.out.println("Datos ya existen. No se cargaron nuevos datos.");
             }
         };
     }
