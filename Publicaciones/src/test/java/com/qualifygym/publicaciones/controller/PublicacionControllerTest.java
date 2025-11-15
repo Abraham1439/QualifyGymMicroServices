@@ -35,7 +35,7 @@ class PublicacionControllerTest {
         publicacion.setDescripcion("Descripción de prueba");
         publicacion.setTemaId(temaId);
         publicacion.setUsuarioId(1L);
-        publicacion.setFecha(System.currentTimeMillis());
+        publicacion.setFecha(java.time.LocalDateTime.now());
         publicacion.setOculta(false);
         
         List<Publicacion> listaPublicaciones = List.of(publicacion);

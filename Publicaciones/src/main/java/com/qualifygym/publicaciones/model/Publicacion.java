@@ -1,6 +1,9 @@
 package com.qualifygym.publicaciones.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,8 +35,10 @@ public class Publicacion {
     @Column(nullable = false, length = 200)
     private String titulo;
 
+    //Dar  formato Json a la fecha
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm", timezone = "America/Santiago")
     @Column(name = "fecha", nullable = false)
-    private Long fecha; // Timestamp en milisegundos
+    private LocalDateTime fecha; // Timestamp en milisegundos
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descripcion;
@@ -40,6 +46,8 @@ public class Publicacion {
     @Column(nullable = false)
     private Boolean oculta = false;
 
+    //Dar  formato Json a la fecha
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm", timezone = "America/Santiago")
     @Column(name = "fecha_baneo")
     private Long fechaBaneo; // Timestamp en milisegundos
 
@@ -54,5 +62,11 @@ public class Publicacion {
 
     @Column(name = "imageUrl", length = 500)
     private String imageUrl; // URL o path de la imagen de la publicación
+
+    //Fornmato para la fecha 
+    @PrePersist
+    public void prePersist() {
+        this.fecha = LocalDateTime.now();
+    }
 }
 
