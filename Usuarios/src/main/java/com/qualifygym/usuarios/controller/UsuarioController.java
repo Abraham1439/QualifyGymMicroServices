@@ -116,17 +116,17 @@ public class UsuarioController {
     @PostMapping("/register")
     public ResponseEntity<?> registrarUsuario(@RequestBody Map<String, String> datos) {
         try {
-            String name = datos.get("name");
+            String username = datos.get("username");
             String email = datos.get("email");
             String phone = datos.get("phone");
             String password = datos.get("password");
             String confirm = datos.get("confirm");
 
-            if (name == null || email == null || phone == null || password == null || confirm == null) {
-                return ResponseEntity.badRequest().body("Faltan campos requeridos: name, email, phone, password, confirm");
+            if (username == null || email == null || phone == null || password == null || confirm == null) {
+                return ResponseEntity.badRequest().body("Faltan campos requeridos: username, email, phone, password, confirm");
             }
 
-            Usuario nuevo = usuarioService.registrarUsuario(name, email, phone, password, confirm);
+            Usuario nuevo = usuarioService.registrarUsuario(username, email, phone, password, confirm);
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

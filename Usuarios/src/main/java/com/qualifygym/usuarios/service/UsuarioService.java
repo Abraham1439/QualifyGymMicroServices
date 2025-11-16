@@ -98,20 +98,20 @@ public class UsuarioService {
 
     /**
      * Registra un nuevo usuario con validaciones completas
-     * @param name Nombre del usuario (solo letras y espacios)
+     * @param username Nombre de usuario (único)
      * @param email Email del usuario (formato válido)
      * @param phone Teléfono del usuario (9 dígitos)
      * @param password Contraseña (mínimo 8 caracteres, mayúscula, minúscula, número, símbolo, sin espacios)
      * @param confirmPassword Confirmación de contraseña
      * @return Usuario creado
      */
-    public Usuario registrarUsuario(String name, String email, String phone, String password, String confirmPassword) {
-        // Validar nombre
-        if (name == null || name.trim().isEmpty()) {
-            throw new RuntimeException("El nombre es obligatorio");
+    public Usuario registrarUsuario(String username, String email, String phone, String password, String confirmPassword) {
+        // Validar username
+        if (username == null || username.trim().isEmpty()) {
+            throw new RuntimeException("El nombre de usuario es obligatorio");
         }
-        if (!Pattern.matches("^[A-Za-zÁÉÍÓÚÑáéíóúñ ]+$", name.trim())) {
-            throw new RuntimeException("El nombre solo debe contener letras y espacios");
+        if (usuarioRepository.existsByUsername(username.trim())) {
+            throw new RuntimeException("El nombre de usuario ya existe");
         }
 
         // Validar email
@@ -156,21 +156,11 @@ public class UsuarioService {
         Rol rolUsuario = roleRepository.findById(2L)
                 .orElseThrow(() -> new RuntimeException("Rol 'Usuario' no encontrado. Asegúrese de que la base de datos esté inicializada."));
 
-        // Generar username único basado en email
-        String baseUsername = email.trim().split("@")[0];
-        String username = baseUsername;
-        int counter = 1;
-        while (usuarioRepository.existsByUsername(username)) {
-            username = baseUsername + counter;
-            counter++;
-        }
-
         // Crear usuario
         Usuario nuevo = new Usuario();
-        nuevo.setUsername(username);
+        nuevo.setUsername(username.trim());
         nuevo.setPassword(passwordEncoder.encode(password));
         nuevo.setEmail(email.trim());
-        nuevo.setName(name.trim());
         nuevo.setPhone(phoneDigits);
         nuevo.setRol(rolUsuario);
 
