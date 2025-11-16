@@ -26,6 +26,7 @@ public class SeguridadConfig {
             .authorizeHttpRequests(auth -> auth
                 // Público - endpoints para comunicación entre microservicios
                 .requestMatchers("/api/v1/usuario/login", 
+                                 "/api/v1/usuario/register",
                                  "/api/v1/usuario/users",
                                  "/api/v1/usuario/users/**").permitAll()
                 

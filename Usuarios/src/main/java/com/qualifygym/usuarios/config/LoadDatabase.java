@@ -26,8 +26,19 @@ public class LoadDatabase {
                 roleRepo.save(usuario);
 
                 // 🔐 Contraseñas encriptadas
-                usuarioRepo.save(new Usuario(null, "admin", encoder.encode("admin123"), "admin@qualifygym.com", admin));
-                usuarioRepo.save(new Usuario(null, "usuario1", encoder.encode("usuario123"), "usuario1@qualifygym.com", usuario));
+                Usuario adminUser = new Usuario();
+                adminUser.setUsername("admin");
+                adminUser.setPassword(encoder.encode("admin123"));
+                adminUser.setEmail("admin@qualifygym.com");
+                adminUser.setRol(admin);
+                usuarioRepo.save(adminUser);
+
+                Usuario normalUser = new Usuario();
+                normalUser.setUsername("usuario1");
+                normalUser.setPassword(encoder.encode("usuario123"));
+                normalUser.setEmail("usuario1@qualifygym.com");
+                normalUser.setRol(usuario);
+                usuarioRepo.save(normalUser);
 
                 System.out.println(" Usuarios creados con contraseña encriptada");
             } else {
