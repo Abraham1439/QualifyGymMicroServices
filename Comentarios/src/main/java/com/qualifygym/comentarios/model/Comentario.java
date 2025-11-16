@@ -1,10 +1,5 @@
 package com.qualifygym.comentarios.model;
 
-import java.time.LocalDateTime;
-
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -35,18 +30,14 @@ public class Comentario {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String comentario;
 
-    //Dar  formato Json a la fecha
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm", timezone = "America/Santiago")
     @Column(name = "fecha_registro", nullable = false)
-    private LocalDateTime fechaRegistro; // Timestamp en milisegundos
-
+    private Long fechaRegistro; // Timestamp en milisegundos (como en la app)
 
     @Column(nullable = false)
     private Boolean oculto = false;
 
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm", timezone = "America/Santiago")
     @Column(name = "fecha_baneo")
-    private LocalDateTime fechaBaneo; // Timestamp en milisegundos
+    private Long fechaBaneo; // Timestamp en milisegundos (como en la app)
 
     @Column(name = "motivo_baneo", columnDefinition = "TEXT")
     private String motivoBaneo;
@@ -57,10 +48,12 @@ public class Comentario {
     @Column(name = "Publicacion_id_publicacion", nullable = false)
     private Long publicacionId; // FK a Publicación (se conectará con el microservicio de publicaciones)
 
-    //Fornmato para la fecha 
+    //Formato para la fecha - se establece como timestamp en milisegundos
     @PrePersist
     public void prePersist() {
-        this.fechaRegistro = LocalDateTime.now();
+        if (this.fechaRegistro == null) {
+            this.fechaRegistro = System.currentTimeMillis();
+        }
     }
 }
 

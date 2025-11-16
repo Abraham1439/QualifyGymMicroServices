@@ -25,18 +25,15 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, length = 100, unique = true)
     private String username;
-
-    @Column(nullable = false)
-    @JsonIgnore
-    private String password;
 
     @Column(nullable = false, length = 100)
     private String email;
 
-    @Column(nullable = true, length = 20)
-    private String phone;
+    @Column(nullable = false)
+    @JsonIgnore
+    private String password;
 
     @ManyToOne
     @JoinColumn(name = "rol_id")

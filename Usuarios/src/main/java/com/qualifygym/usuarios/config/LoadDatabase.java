@@ -58,7 +58,6 @@ public class LoadDatabase {
 
             // Crear usuarios iniciales solo si no existen
             if (usuarioRepo.count() == 0 && admin != null && usuario != null) {
-                // 🔐 Contraseñas encriptadas
                 Usuario adminUser = new Usuario();
                 adminUser.setUsername("admin");
                 adminUser.setPassword(encoder.encode("admin123"));

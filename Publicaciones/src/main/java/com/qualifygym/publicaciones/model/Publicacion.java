@@ -1,9 +1,6 @@
 package com.qualifygym.publicaciones.model;
 
 
-import java.time.LocalDateTime;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,10 +32,8 @@ public class Publicacion {
     @Column(nullable = false, length = 200)
     private String titulo;
 
-    //Dar  formato Json a la fecha
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm", timezone = "America/Santiago")
-    @Column(name = "fecha", nullable = false)
-    private LocalDateTime fecha; // Timestamp en milisegundos
+    @Column(nullable = false)
+    private Long fecha; // Timestamp en milisegundos (como en la app)
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descripcion;
@@ -46,10 +41,8 @@ public class Publicacion {
     @Column(nullable = false)
     private Boolean oculta = false;
 
-    //Dar  formato Json a la fecha
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm", timezone = "America/Santiago")
     @Column(name = "fecha_baneo")
-    private Long fechaBaneo; // Timestamp en milisegundos
+    private Long fechaBaneo; // Timestamp en milisegundos (como en la app)
 
     @Column(name = "motivo_baneo", columnDefinition = "TEXT")
     private String motivoBaneo;
@@ -63,10 +56,12 @@ public class Publicacion {
     @Column(name = "imageUrl", length = 500)
     private String imageUrl; // URL o path de la imagen de la publicación
 
-    //Fornmato para la fecha 
+    //Formato para la fecha - se establece como timestamp en milisegundos
     @PrePersist
     public void prePersist() {
-        this.fecha = LocalDateTime.now();
+        if (this.fecha == null) {
+            this.fecha = System.currentTimeMillis();
+        }
     }
 }
 
