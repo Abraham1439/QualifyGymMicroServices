@@ -1,5 +1,6 @@
 package com.qualifygym.publicaciones.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -97,7 +98,7 @@ public class PublicacionService {
         Publicacion nueva = new Publicacion();
         nueva.setTitulo(titulo.trim());
         nueva.setDescripcion(descripcion.trim());
-        nueva.setFecha(System.currentTimeMillis());
+        nueva.setFecha(LocalDateTime.now());
         nueva.setOculta(false);
         nueva.setUsuarioId(usuarioId);
         nueva.setTemaId(temaId);
@@ -139,7 +140,7 @@ public class PublicacionService {
                 .orElseThrow(() -> new RuntimeException("Publicación no encontrada ID: " + id));
 
         existente.setOculta(true);
-        existente.setFechaBaneo(System.currentTimeMillis());
+        existente.setFechaBaneo(LocalDateTime.now());
         if (motivoBaneo != null && !motivoBaneo.trim().isEmpty()) {
             existente.setMotivoBaneo(motivoBaneo.trim());
         }

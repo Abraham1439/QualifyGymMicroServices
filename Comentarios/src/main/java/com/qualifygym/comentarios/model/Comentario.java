@@ -34,7 +34,7 @@ public class Comentario {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String comentario;
 
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm", timezone = "America/Santiago")
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm", timezone = "America/Santiago") // Formato para la fecha
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro; // Fecha y hora de registro
 
