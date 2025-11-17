@@ -62,6 +62,7 @@ public class LoadDatabase {
                 adminUser.setUsername("admin");
                 adminUser.setPassword(encoder.encode("admin123"));
                 adminUser.setEmail("admin@qualifygym.com");
+                adminUser.setPhone("123456789");
                 adminUser.setRol(admin);
                 usuarioRepo.save(adminUser);
 
@@ -69,6 +70,7 @@ public class LoadDatabase {
                 normalUser.setUsername("usuario1");
                 normalUser.setPassword(encoder.encode("usuario123"));
                 normalUser.setEmail("usuario1@qualifygym.com");
+                normalUser.setPhone("987654321");
                 normalUser.setRol(usuario);
                 usuarioRepo.save(normalUser);
 

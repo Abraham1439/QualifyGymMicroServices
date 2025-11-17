@@ -35,7 +35,7 @@ public class UsuarioService {
         return usuarioRepository.findById(id).orElse(null);
     }
 
-    public Usuario crearUsuario(String username, String password, String email, Long roleId) {
+    public Usuario crearUsuario(String username, String password, String email, String phone, Long roleId) {
         if (usuarioRepository.existsByUsername(username)) {
             throw new RuntimeException("El username ya está registrado: " + username);
         }
@@ -47,11 +47,12 @@ public class UsuarioService {
         nuevo.setUsername(username);
         nuevo.setPassword(passwordEncoder.encode(password));
         nuevo.setEmail(email);
+        nuevo.setPhone(phone);
         nuevo.setRol(rol);
         return usuarioRepository.save(nuevo);
     }
 
-    public Usuario actualizarUsuario(Long id, String username, String password, String email, Long roleId) {
+    public Usuario actualizarUsuario(Long id, String username, String password, String email, String phone, Long roleId) {
         Usuario existente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado ID:" + id));
 
@@ -66,6 +67,9 @@ public class UsuarioService {
         }
         if (email != null && !email.equals(existente.getEmail())) {
             existente.setEmail(email);
+        }
+        if (phone != null && !phone.trim().isEmpty()) {
+            existente.setPhone(phone.trim());
         }
         if (roleId != null) {
             Rol rol = roleRepository.findById(roleId)

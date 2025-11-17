@@ -53,13 +53,14 @@ public class UsuarioController {
             String username = (String) datos.get("username");
             String password = (String) datos.get("password");
             String email = (String) datos.get("email");
+            String phone = (String) datos.get("phone");
             Long rolId = datos.get("rolId") != null ? Long.valueOf(datos.get("rolId").toString()) : null;
             
-            if (username == null || password == null || email == null || rolId == null) {
-                return ResponseEntity.badRequest().body("Faltan campos requeridos: username, password, email, rolId");
+            if (username == null || password == null || email == null || phone == null || rolId == null) {
+                return ResponseEntity.badRequest().body("Faltan campos requeridos: username, password, email, phone, rolId");
             }
             
-            Usuario nuevo = usuarioService.crearUsuario(username, password, email, rolId);
+            Usuario nuevo = usuarioService.crearUsuario(username, password, email, phone, rolId);
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -72,9 +73,10 @@ public class UsuarioController {
             String username = (String) datos.get("username");
             String password = (String) datos.get("password");
             String email = (String) datos.get("email");
+            String phone = (String) datos.get("phone");
             Long rolId = datos.get("rolId") != null ? Long.valueOf(datos.get("rolId").toString()) : null;
             
-            Usuario actualizado = usuarioService.actualizarUsuario(id, username, password, email, rolId);
+            Usuario actualizado = usuarioService.actualizarUsuario(id, username, password, email, phone, rolId);
             return ResponseEntity.ok(actualizado);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
