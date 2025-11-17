@@ -20,21 +20,36 @@ import org.springframework.web.bind.annotation.RestController;
 import com.QualifyGym.tema.model.Tema;
 import com.QualifyGym.tema.service.TemaService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/v1/tema")
+@Tag(name = "Temas", description = "API para la gestión de temas del sistema QualifyGym")
 public class TemaController {
 
     @Autowired
     private TemaService temaService;
 
-    // GET - Obtener todos los temas
+    @Operation(summary = "Obtener todos los temas", description = "Retorna una lista de todos los temas registrados en el sistema")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de temas obtenida exitosamente"),
+            @ApiResponse(responseCode = "204", description = "No hay temas registrados")
+    })
     @GetMapping("/temas")
     public ResponseEntity<List<Tema>> obtenerTodosTemas() {
         List<Tema> temas = temaService.obtenerTodosTemas();
         return temas.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(temas);
     }
 
-    // GET - Obtener tema por ID
+    @Operation(summary = "Obtener tema por ID", description = "Retorna la información de un tema específico por su ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tema encontrado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Tema no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping("/temas/{id}")
     public ResponseEntity<?> obtenerTemaPorId(@PathVariable Long id) {
         try {
@@ -50,21 +65,34 @@ public class TemaController {
         }
     }
 
-    // GET - Obtener temas por estado
+    @Operation(summary = "Obtener temas por estado", description = "Retorna todos los temas asociados a un estado específico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de temas obtenida exitosamente"),
+            @ApiResponse(responseCode = "204", description = "No hay temas para este estado")
+    })
     @GetMapping("/temas/estado/{estadoId}")
     public ResponseEntity<List<Tema>> obtenerTemasPorEstado(@PathVariable Long estadoId) {
         List<Tema> temas = temaService.obtenerTemasPorEstado(estadoId);
         return temas.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(temas);
     }
 
-    // GET - Buscar temas por nombre
+    @Operation(summary = "Buscar temas por nombre", description = "Busca temas cuyo nombre contenga el texto especificado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Búsqueda realizada exitosamente"),
+            @ApiResponse(responseCode = "204", description = "No se encontraron temas")
+    })
     @GetMapping("/temas/buscar")
     public ResponseEntity<List<Tema>> buscarTemas(@RequestParam String query) {
         List<Tema> temas = temaService.buscarTemas(query);
         return temas.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(temas);
     }
 
-    // GET - Obtener tema por nombre exacto
+    @Operation(summary = "Obtener tema por nombre exacto", description = "Retorna la información de un tema específico por su nombre exacto")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tema encontrado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Tema no encontrado con el nombre especificado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping("/temas/nombre/{nombre}")
     public ResponseEntity<?> obtenerTemaPorNombre(@PathVariable String nombre) {
         try {
@@ -80,21 +108,31 @@ public class TemaController {
         }
     }
 
-    // GET - Verificar si existe tema por nombre
+    @Operation(summary = "Verificar existencia de tema", description = "Verifica si existe un tema con el nombre especificado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Verificación realizada exitosamente (retorna true o false)")
+    })
     @GetMapping("/temas/existe/{nombre}")
     public ResponseEntity<Boolean> existeTemaPorNombre(@PathVariable String nombre) {
         boolean existe = temaService.existePorNombre(nombre);
         return ResponseEntity.ok(existe);
     }
 
-    // GET - Contar temas por estado
+    @Operation(summary = "Contar temas por estado", description = "Retorna el número total de temas asociados a un estado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Conteo realizado exitosamente")
+    })
     @GetMapping("/temas/estado/{estadoId}/count")
     public ResponseEntity<Long> contarTemasPorEstado(@PathVariable Long estadoId) {
         long count = temaService.contarTemasPorEstado(estadoId);
         return ResponseEntity.ok(count);
     }
 
-    // POST - Crear nuevo tema
+    @Operation(summary = "Crear nuevo tema", description = "Crea un nuevo tema en el sistema. Valida que el estado exista. El nombre debe ser único")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Tema creado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos, faltantes, estado no existe o nombre ya existe")
+    })
     @PostMapping("/temas")
     public ResponseEntity<?> crearTema(@RequestBody Map<String, Object> datos) {
         try {
@@ -115,7 +153,11 @@ public class TemaController {
         }
     }
 
-    // PUT - Actualizar tema
+    @Operation(summary = "Actualizar tema", description = "Actualiza el nombre y/o estado de un tema existente. Valida que el nuevo estado exista si se proporciona")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tema actualizado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos, tema no encontrado o estado no existe")
+    })
     @PutMapping("/temas/{id}")
     public ResponseEntity<?> actualizarTema(@PathVariable Long id, @RequestBody Map<String, Object> datos) {
         try {
@@ -131,7 +173,12 @@ public class TemaController {
         }
     }
 
-    // DELETE - Eliminar tema
+    @Operation(summary = "Eliminar tema", description = "Elimina permanentemente un tema del sistema")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Tema eliminado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Tema no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error al eliminar tema")
+    })
     @DeleteMapping("/temas/{id}")
     public ResponseEntity<?> eliminarTema(@PathVariable Long id) {
         try {

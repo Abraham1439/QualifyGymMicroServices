@@ -19,21 +19,36 @@ import org.springframework.web.bind.annotation.RestController;
 import com.qualifygym.estados.model.Estado;
 import com.qualifygym.estados.service.EstadoService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/v1/estado")
+@Tag(name = "Estados", description = "API para la gestión de estados del sistema QualifyGym")
 public class EstadoController {
 
     @Autowired
     private EstadoService estadoService;
 
-    // GET - Obtener todos los estados
+    @Operation(summary = "Obtener todos los estados", description = "Retorna una lista de todos los estados registrados en el sistema")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de estados obtenida exitosamente"),
+            @ApiResponse(responseCode = "204", description = "No hay estados registrados")
+    })
     @GetMapping("/estados")
     public ResponseEntity<List<Estado>> obtenerTodosEstados() {
         List<Estado> estados = estadoService.obtenerTodosEstados();
         return estados.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(estados);
     }
 
-    // GET - Obtener estado por ID
+    @Operation(summary = "Obtener estado por ID", description = "Retorna la información de un estado específico por su ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estado encontrado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Estado no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping("/estados/{id}")
     public ResponseEntity<?> obtenerEstadoPorId(@PathVariable Long id) {
         try {
@@ -49,7 +64,12 @@ public class EstadoController {
         }
     }
 
-    // GET - Obtener estado por nombre
+    @Operation(summary = "Obtener estado por nombre", description = "Retorna la información de un estado específico por su nombre")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estado encontrado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Estado no encontrado con el nombre especificado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping("/estados/nombre/{nombre}")
     public ResponseEntity<?> obtenerEstadoPorNombre(@PathVariable String nombre) {
         try {
@@ -65,14 +85,21 @@ public class EstadoController {
         }
     }
 
-    // GET - Verificar si existe estado por nombre
+    @Operation(summary = "Verificar existencia de estado", description = "Verifica si existe un estado con el nombre especificado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Verificación realizada exitosamente (retorna true o false)")
+    })
     @GetMapping("/estados/existe/{nombre}")
     public ResponseEntity<Boolean> existeEstadoPorNombre(@PathVariable String nombre) {
         boolean existe = estadoService.existePorNombre(nombre);
         return ResponseEntity.ok(existe);
     }
 
-    // POST - Crear nuevo estado
+    @Operation(summary = "Crear nuevo estado", description = "Crea un nuevo estado en el sistema. El nombre debe ser único")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Estado creado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos o nombre ya existe")
+    })
     @PostMapping("/estados")
     public ResponseEntity<?> crearEstado(@RequestBody Map<String, Object> datos) {
         try {
@@ -89,7 +116,11 @@ public class EstadoController {
         }
     }
 
-    // POST - Obtener o crear estado
+    @Operation(summary = "Obtener o crear estado", description = "Obtiene un estado existente por nombre, o lo crea si no existe")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estado obtenido o creado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
     @PostMapping("/estados/obtener-o-crear")
     public ResponseEntity<?> obtenerOCrearEstado(@RequestBody Map<String, Object> datos) {
         try {
@@ -106,7 +137,11 @@ public class EstadoController {
         }
     }
 
-    // PUT - Actualizar estado
+    @Operation(summary = "Actualizar estado", description = "Actualiza el nombre de un estado existente. El nuevo nombre debe ser único")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estado actualizado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos, estado no encontrado o nombre ya existe")
+    })
     @PutMapping("/estados/{id}")
     public ResponseEntity<?> actualizarEstado(@PathVariable Long id, @RequestBody Map<String, Object> datos) {
         try {
@@ -123,7 +158,12 @@ public class EstadoController {
         }
     }
 
-    // DELETE - Eliminar estado
+    @Operation(summary = "Eliminar estado", description = "Elimina permanentemente un estado del sistema")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Estado eliminado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Estado no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error al eliminar estado")
+    })
     @DeleteMapping("/estados/{id}")
     public ResponseEntity<?> eliminarEstado(@PathVariable Long id) {
         try {
