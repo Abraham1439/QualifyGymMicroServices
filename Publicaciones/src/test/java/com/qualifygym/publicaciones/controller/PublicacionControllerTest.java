@@ -14,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @WebMvcTest(PublicacionController.class)
@@ -35,7 +36,7 @@ class PublicacionControllerTest {
         publicacion.setDescripcion("Descripción de prueba");
         publicacion.setTemaId(temaId);
         publicacion.setUsuarioId(1L);
-        publicacion.setFecha(java.time.LocalDateTime.now());
+        publicacion.setFecha(LocalDateTime.now());
         publicacion.setOculta(false);
         
         List<Publicacion> listaPublicaciones = List.of(publicacion);

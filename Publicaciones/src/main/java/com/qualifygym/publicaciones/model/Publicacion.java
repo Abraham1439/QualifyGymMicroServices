@@ -1,5 +1,9 @@
 package com.qualifygym.publicaciones.model;
 
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,8 +34,9 @@ public class Publicacion {
     @Column(nullable = false, length = 200)
     private String titulo;
 
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm", timezone = "America/Santiago")
     @Column(nullable = false)
-    private Long fecha; // Timestamp en milisegundos (como en la app)
+    private LocalDateTime fecha; //Fecha y hora de la publicacion
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descripcion;
@@ -39,8 +44,9 @@ public class Publicacion {
     @Column(nullable = false)
     private Boolean oculta = false;
 
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm", timezone = "America/Santiago")
     @Column(name = "fecha_baneo")
-    private Long fechaBaneo; // Timestamp en milisegundos (como en la app)
+    private LocalDateTime fechaBaneo; //Fecha y hora del baneo
 
     @Column(name = "motivo_baneo", columnDefinition = "TEXT")
     private String motivoBaneo;
@@ -58,7 +64,7 @@ public class Publicacion {
     @PrePersist
     public void prePersist() {
         if (this.fecha == null) {
-            this.fecha = System.currentTimeMillis();
+            this.fecha = LocalDateTime.now();
         }
     }
 }
