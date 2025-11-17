@@ -40,9 +40,9 @@ public class SeguridadConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/usuario/users/**")
                     .hasAuthority("Administrador")
                 
-                // Swagger solo para rol "Administrador"
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**")
-                    .hasAuthority("Administrador")
+                // Swagger público (sin autenticación)
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html")
+                    .permitAll()
                 
                 // Resto de endpoints requieren autenticación
                 .anyRequest().authenticated()
