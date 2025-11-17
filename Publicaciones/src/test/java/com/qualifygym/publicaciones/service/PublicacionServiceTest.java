@@ -11,7 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
 
 class PublicacionServiceTest {
 
@@ -39,7 +39,7 @@ class PublicacionServiceTest {
         guardada.setDescripcion(descripcion);
         guardada.setUsuarioId(usuarioId);
         guardada.setTemaId(temaId);
-        guardada.setFecha(java.time.LocalDateTime.now());
+        guardada.setFecha(LocalDateTime.now());
         guardada.setOculta(false);
 
         when(publicacionRepository.save(any(Publicacion.class))).thenReturn(guardada);

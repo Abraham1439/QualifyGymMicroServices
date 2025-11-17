@@ -1,5 +1,6 @@
 package com.qualifygym.comentarios.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,7 +76,7 @@ public class ComentarioService {
 
         Comentario nuevo = new Comentario();
         nuevo.setComentario(comentario.trim());
-        nuevo.setFechaRegistro(System.currentTimeMillis());
+        nuevo.setFechaRegistro(LocalDateTime.now());
         nuevo.setOculto(false);
         nuevo.setUsuarioId(usuarioId);
         nuevo.setPublicacionId(publicacionId);
@@ -101,7 +102,7 @@ public class ComentarioService {
                 .orElseThrow(() -> new RuntimeException("Comentario no encontrado ID: " + id));
 
         existente.setOculto(true);
-        existente.setFechaBaneo(System.currentTimeMillis());
+        existente.setFechaBaneo(LocalDateTime.now());
         if (motivoBaneo != null && !motivoBaneo.trim().isEmpty()) {
             existente.setMotivoBaneo(motivoBaneo.trim());
         }

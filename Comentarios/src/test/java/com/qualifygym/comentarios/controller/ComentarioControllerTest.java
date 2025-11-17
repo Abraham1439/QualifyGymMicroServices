@@ -14,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @WebMvcTest(ComentarioController.class)
@@ -34,7 +35,7 @@ class ComentarioControllerTest {
         comentario.setComentario("Comentario de prueba");
         comentario.setPublicacionId(publicacionId);
         comentario.setUsuarioId(1L);
-        comentario.setFechaRegistro(java.time.LocalDateTime.now());
+        comentario.setFechaRegistro(LocalDateTime.now());
         comentario.setOculto(false);
         
         List<Comentario> listaComentarios = List.of(comentario);

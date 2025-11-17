@@ -1,5 +1,9 @@
 package com.qualifygym.comentarios.model;
 
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,14 +34,16 @@ public class Comentario {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String comentario;
 
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm", timezone = "America/Santiago") // Formato para la fecha
     @Column(name = "fecha_registro", nullable = false)
-    private Long fechaRegistro; // Timestamp en milisegundos (como en la app)
+    private LocalDateTime fechaRegistro; // Fecha y hora de registro
 
     @Column(nullable = false)
     private Boolean oculto = false;
 
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm", timezone = "America/Santiago")
     @Column(name = "fecha_baneo")
-    private Long fechaBaneo; // Timestamp en milisegundos (como en la app)
+    private LocalDateTime fechaBaneo; // Fecha y hora del baneo
 
     @Column(name = "motivo_baneo", columnDefinition = "TEXT")
     private String motivoBaneo;
@@ -52,7 +58,7 @@ public class Comentario {
     @PrePersist
     public void prePersist() {
         if (this.fechaRegistro == null) {
-            this.fechaRegistro = System.currentTimeMillis();
+            this.fechaRegistro = LocalDateTime.now();
         }
     }
 }
