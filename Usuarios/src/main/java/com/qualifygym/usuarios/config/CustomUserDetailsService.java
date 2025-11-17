@@ -23,7 +23,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         Usuario usuario = usuarioRepo.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-        // Devuelve el nombre del rol exacto como está en tu BD ("Administrador")
         return new User(
                 usuario.getUsername(),
                 usuario.getPassword(),

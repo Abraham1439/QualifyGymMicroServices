@@ -97,7 +97,7 @@ public class PublicacionService {
         Publicacion nueva = new Publicacion();
         nueva.setTitulo(titulo.trim());
         nueva.setDescripcion(descripcion.trim());
-        nueva.setFecha(java.time.LocalDateTime.now());
+        nueva.setFecha(System.currentTimeMillis());
         nueva.setOculta(false);
         nueva.setUsuarioId(usuarioId);
         nueva.setTemaId(temaId);

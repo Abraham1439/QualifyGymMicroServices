@@ -53,7 +53,7 @@ public class UsuarioController {
             String username = (String) datos.get("username");
             String password = (String) datos.get("password");
             String email = (String) datos.get("email");
-            Long rolId = Long.valueOf(datos.get("rolId").toString());
+            Long rolId = datos.get("rolId") != null ? Long.valueOf(datos.get("rolId").toString()) : null;
             
             if (username == null || password == null || email == null || rolId == null) {
                 return ResponseEntity.badRequest().body("Faltan campos requeridos: username, password, email, rolId");
@@ -95,41 +95,18 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> datos) {
         try {
-            String email = datos.get("email");
+            String username = datos.get("username");
             String password = datos.get("password");
 
-            if (email == null || password == null) {
-                return ResponseEntity.badRequest().body("Faltan campos 'Email' o 'password'");
+            if (username == null || password == null) {
+                return ResponseEntity.badRequest().body("Faltan campos 'username' o 'password'");
             }
 
-            boolean valido = usuarioService.validarCredenciales(email, password);
+            boolean valido = usuarioService.validarCredenciales(username, password);
             return valido
                 ? ResponseEntity.ok("Login exitoso")
                 : ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                 .body("Error interno: " + e.getMessage());
-        }
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<?> registrarUsuario(@RequestBody Map<String, String> datos) {
-        try {
-            String name = datos.get("name");
-            String email = datos.get("email");
-            String phone = datos.get("phone");
-            String password = datos.get("password");
-            String confirm = datos.get("confirm");
-
-            if (name == null || email == null || phone == null || password == null || confirm == null) {
-                return ResponseEntity.badRequest().body("Faltan campos requeridos: name, email, phone, password, confirm");
-            }
-
-            Usuario nuevo = usuarioService.registrarUsuario(name, email, phone, password, confirm);
-            return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                                  .body("Error interno: " + e.getMessage());

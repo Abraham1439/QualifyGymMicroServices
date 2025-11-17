@@ -16,16 +16,48 @@ public class LoadDatabase {
     @Bean
     CommandLineRunner initDatabase(RoleRepository roleRepo, UsuarioRepository usuarioRepo, PasswordEncoder encoder) {
         return args -> {
-            if (roleRepo.count() == 0 && usuarioRepo.count() == 0) {
-                Rol admin = new Rol();
+            // Verificar y crear roles si no existen
+            Rol admin = null;
+            Rol usuario = null;
+            
+            if (roleRepo.count() == 0) {
+                admin = new Rol();
                 admin.setNombre("Administrador");
                 roleRepo.save(admin);
 
-                Rol usuario = new Rol();
+                usuario = new Rol();
                 usuario.setNombre("Usuario");
                 roleRepo.save(usuario);
 
-                // 🔐 Contraseñas encriptadas
+                Rol moderador = new Rol();
+                moderador.setNombre("Moderador");
+                roleRepo.save(moderador);
+            } else {
+                // Verificar si existe el rol Moderador
+                boolean existeModerador = roleRepo.findAll().stream()
+                    .anyMatch(rol -> "Moderador".equals(rol.getNombre()));
+                
+                if (!existeModerador) {
+                    Rol moderador = new Rol();
+                    moderador.setNombre("Moderador");
+                    roleRepo.save(moderador);
+                    System.out.println("✅ Rol 'Moderador' agregado");
+                }
+                
+                // Obtener roles existentes para crear usuarios
+                admin = roleRepo.findAll().stream()
+                    .filter(rol -> "Administrador".equals(rol.getNombre()))
+                    .findFirst()
+                    .orElse(null);
+                    
+                usuario = roleRepo.findAll().stream()
+                    .filter(rol -> "Usuario".equals(rol.getNombre()))
+                    .findFirst()
+                    .orElse(null);
+            }
+
+            // Crear usuarios iniciales solo si no existen
+            if (usuarioRepo.count() == 0 && admin != null && usuario != null) {
                 Usuario adminUser = new Usuario();
                 adminUser.setUsername("admin");
                 adminUser.setPassword(encoder.encode("admin123"));
@@ -40,8 +72,8 @@ public class LoadDatabase {
                 normalUser.setRol(usuario);
                 usuarioRepo.save(normalUser);
 
-                System.out.println(" Usuarios creados con contraseña encriptada");
-            } else {
+                System.out.println("✅ Usuarios creados con contraseña encriptada");
+            } else if (usuarioRepo.count() > 0) {
                 System.out.println("ℹ Datos ya existen. No se cargaron nuevos datos.");
             }
         };
