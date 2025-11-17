@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,9 +25,11 @@ import lombok.NoArgsConstructor;
 public class Rol {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador único del rol", example = "1")
     private Long id;
 
     @Column(nullable = false, unique = true)
+    @Schema(description = "Nombre del rol", example = "Administrador")
     private String nombre;
 
     @OneToMany(mappedBy = "rol", cascade = CascadeType.ALL)

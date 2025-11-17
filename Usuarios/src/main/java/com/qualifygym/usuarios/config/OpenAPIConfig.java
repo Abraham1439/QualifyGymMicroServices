@@ -1,14 +1,10 @@
 package com.qualifygym.usuarios.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
 
 /**
  * Configuración de OpenAPI/Swagger para el microservicio de Usuarios
@@ -18,37 +14,9 @@ import java.util.List;
  */
 @Configuration
 public class OpenAPIConfig {
-
-    /**
-     * Configura la información de la API para Swagger
-     * 
-     * @return OpenAPI con toda la información de la API documentada
-     */
-    @Bean
+@Bean
     public OpenAPI apiInfo() {
-        Server server = new Server();
-        server.setUrl("http://localhost:8081");
-        server.setDescription("Servidor de desarrollo - Microservicio de Usuarios");
-
-        Contact contact = new Contact();
-        contact.setName("QualifyGym Team");
-        contact.setEmail("support@qualifygym.com");
-
-        License license = new License();
-        license.setName("Apache 2.0");
-        license.setUrl("https://www.apache.org/licenses/LICENSE-2.0.html");
-
-        Info info = new Info()
-                .title("QualifyGym - Microservicio de Usuarios")
-                .version("1.0.0")
-                .description("API REST para la gestión de usuarios del sistema QualifyGym. " +
-                        "Incluye operaciones CRUD, autenticación, gestión de roles y permisos.")
-                .contact(contact)
-                .license(license);
-
-        return new OpenAPI()
-                .info(info)
-                .servers(List.of(server));
+        return new OpenAPI().info(new Info().title("Usuarios QuialifyGym").version("1.0").description("Usuarios que se encuentras registrados en  en QuialifyGym"));
     }
 }
 
