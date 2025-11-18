@@ -43,37 +43,13 @@ public class SeguridadConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // Permitir peticiones OPTIONS (preflight de CORS) sin autenticación
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                
-                // Público - endpoints para login y registro (sin autenticación)
-                // Es importante que estos estén antes de otras reglas
-                .requestMatchers(HttpMethod.POST, "/api/v1/usuario/login", 
-                                 "/api/v1/usuario/register").permitAll()
-                
-                // Público - GET para comunicación entre microservicios (solo lectura)
-                .requestMatchers(HttpMethod.GET, "/api/v1/usuario/users", "/api/v1/usuario/users/**").permitAll()
-                
-                // Administrador - creación, actualización y eliminación de usuarios
-                .requestMatchers(HttpMethod.POST, "/api/v1/usuario/users")
-                    .hasAuthority("Administrador")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/usuario/users/**")
-                    .hasAuthority("Administrador")
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/usuario/users/**")
-                    .hasAuthority("Administrador")
-                
-                // Swagger público (sin autenticación)
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/swagger-ui.html")
-                    .permitAll()
-                
-                // Resto de endpoints requieren autenticación
-                .anyRequest().authenticated()
-            )
-            // Configurar HTTP Basic solo para endpoints que requieren autenticación
-            .httpBasic(httpBasic -> httpBasic
-                .realmName("QualifyGym API")
-            )
-            .userDetailsService(customUserDetailsService);
+                // TEMPORAL: Todos los endpoints son públicos para desarrollo
+                // TODO: Restaurar autenticación en producción
+                .anyRequest().permitAll()
+            );
+            // Deshabilitar HTTP Basic temporalmente
+            // .httpBasic(httpBasic -> httpBasic.realmName("QualifyGym API"))
+            // .userDetailsService(customUserDetailsService)
         
         return http.build();
     }

@@ -161,14 +161,20 @@ public class UsuarioController {
             String email = datos.get("email");
             String password = datos.get("password");
 
-            if (email == null || password == null) {
-                return ResponseEntity.badRequest().body("Faltan campos 'email' o 'password'");
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("El campo 'email' es requerido");
+            }
+            if (password == null || password.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("El campo 'password' es requerido");
             }
 
-            boolean valido = usuarioService.validarCredenciales(email, password);
-            return valido
-                ? ResponseEntity.ok("Login exitoso")
-                : ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
+            boolean valido = usuarioService.validarCredenciales(email.trim(), password);
+            if (valido) {
+                return ResponseEntity.ok("Login exitoso");
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Credenciales inválidas. Verifica tu email y contraseña.");
+            }
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
