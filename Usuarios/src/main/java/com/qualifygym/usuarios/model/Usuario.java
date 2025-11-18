@@ -29,8 +29,8 @@ public class Usuario {
     @Schema(description = "Identificador único del usuario", example = "1")
     private Long id;
 
-    @Column(nullable = false, length = 100, unique = true)
-    @Schema(description = "Nombre de usuario único", example = "Victor Isidro")
+    @Column(nullable = false, length = 100)
+    @Schema(description = "Nombre de usuario", example = "Victor Isidro")
     private String username;
 
     @Column(nullable = false, length = 100)

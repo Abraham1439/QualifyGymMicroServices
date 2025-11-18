@@ -36,10 +36,6 @@ public class UsuarioService {
     }
 
     public Usuario crearUsuario(String username, String password, String email, String phone, Long roleId) {
-        if (usuarioRepository.existsByUsername(username)) {
-            throw new RuntimeException("El username ya está registrado: " + username);
-        }
-
         Rol rol = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado ID:" + roleId));
 
@@ -57,9 +53,6 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado ID:" + id));
 
         if (username != null && !username.trim().isEmpty()) {
-            if (!username.equals(existente.getUsername()) && usuarioRepository.existsByUsername(username)) {
-                throw new RuntimeException("El username ya está registrado: " + username);
-            }
             existente.setUsername(username.trim());
         }
         if (password != null && !password.isEmpty()) {
@@ -105,12 +98,7 @@ public class UsuarioService {
      * Este método es para registro público, a diferencia de crearUsuario que requiere rol Administrador.
      */
     public Usuario registrarUsuarioPublico(String username, String password, String email, String phone) {
-        // Validar que el username no esté duplicado
-        if (usuarioRepository.existsByUsername(username)) {
-            throw new RuntimeException("El username ya está registrado: " + username);
-        }
-
-        // Validar que el email no esté duplicado
+        // Validar que el email no esté duplicado (el email sigue siendo único)
         if (usuarioRepository.existsByEmail(email)) {
             throw new RuntimeException("El email ya está registrado: " + email);
         }
