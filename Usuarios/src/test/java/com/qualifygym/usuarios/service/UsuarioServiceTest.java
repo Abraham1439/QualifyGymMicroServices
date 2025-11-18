@@ -321,20 +321,20 @@ class UsuarioServiceTest {
     @Test
     void validarCredenciales_conCredencialesCorrectas_debeRetornarTrue() {
         // Arrange
-        String username = "testuser";
+        String email = "test@test.com";
         String password = "password123";
         String encodedPassword = "encodedPassword";
         
         usuarioTest.setPassword(encodedPassword);
-        when(usuarioRepository.findByUsername(username)).thenReturn(Optional.of(usuarioTest));
+        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuarioTest));
         when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
         
         // Act
-        boolean resultado = usuarioService.validarCredenciales(username, password);
+        boolean resultado = usuarioService.validarCredenciales(email, password);
         
         // Assert
         assertTrue(resultado);
-        verify(usuarioRepository, times(1)).findByUsername(username);
+        verify(usuarioRepository, times(1)).findByEmail(email);
         verify(passwordEncoder, times(1)).matches(password, encodedPassword);
     }
 
@@ -345,20 +345,20 @@ class UsuarioServiceTest {
     @Test
     void validarCredenciales_conCredencialesIncorrectas_debeRetornarFalse() {
         // Arrange
-        String username = "testuser";
+        String email = "test@test.com";
         String password = "passwordIncorrecto";
         String encodedPassword = "encodedPassword";
         
         usuarioTest.setPassword(encodedPassword);
-        when(usuarioRepository.findByUsername(username)).thenReturn(Optional.of(usuarioTest));
+        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuarioTest));
         when(passwordEncoder.matches(password, encodedPassword)).thenReturn(false);
         
         // Act
-        boolean resultado = usuarioService.validarCredenciales(username, password);
+        boolean resultado = usuarioService.validarCredenciales(email, password);
         
         // Assert
         assertFalse(resultado);
-        verify(usuarioRepository, times(1)).findByUsername(username);
+        verify(usuarioRepository, times(1)).findByEmail(email);
         verify(passwordEncoder, times(1)).matches(password, encodedPassword);
     }
 
@@ -369,17 +369,17 @@ class UsuarioServiceTest {
     @Test
     void validarCredenciales_conUsuarioInexistente_debeRetornarFalse() {
         // Arrange
-        String username = "noExiste";
+        String email = "noexiste@test.com";
         String password = "password123";
         
-        when(usuarioRepository.findByUsername(username)).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.empty());
         
         // Act
-        boolean resultado = usuarioService.validarCredenciales(username, password);
+        boolean resultado = usuarioService.validarCredenciales(email, password);
         
         // Assert
         assertFalse(resultado);
-        verify(usuarioRepository, times(1)).findByUsername(username);
+        verify(usuarioRepository, times(1)).findByEmail(email);
         verify(passwordEncoder, never()).matches(anyString(), anyString());
     }
 }

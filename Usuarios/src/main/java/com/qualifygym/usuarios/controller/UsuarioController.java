@@ -129,24 +129,24 @@ public class UsuarioController {
         }
     }
 
-    @Operation(summary = "Iniciar sesión", description = "Valida las credenciales de un usuario y permite el acceso al sistema")
+    @Operation(summary = "Iniciar sesión", description = "Valida las credenciales de un usuario usando su email y contraseña para permitir el acceso al sistema")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login exitoso"),
-            @ApiResponse(responseCode = "400", description = "Faltan campos 'username' o 'password'"),
+            @ApiResponse(responseCode = "400", description = "Faltan campos 'email' o 'password'"),
             @ApiResponse(responseCode = "401", description = "Credenciales inválidas"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> datos) {
         try {
-            String username = datos.get("username");
+            String email = datos.get("email");
             String password = datos.get("password");
 
-            if (username == null || password == null) {
-                return ResponseEntity.badRequest().body("Faltan campos 'username' o 'password'");
+            if (email == null || password == null) {
+                return ResponseEntity.badRequest().body("Faltan campos 'email' o 'password'");
             }
 
-            boolean valido = usuarioService.validarCredenciales(username, password);
+            boolean valido = usuarioService.validarCredenciales(email, password);
             return valido
                 ? ResponseEntity.ok("Login exitoso")
                 : ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");

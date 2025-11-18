@@ -326,12 +326,12 @@ class UsuarioControllerTest {
         // Arrange
         String requestBody = """
             {
-                "username": "testuser",
+                "email": "test@test.com",
                 "password": "password123"
             }
             """;
         
-        when(usuarioService.validarCredenciales("testuser", "password123")).thenReturn(true);
+        when(usuarioService.validarCredenciales("test@test.com", "password123")).thenReturn(true);
         
         // Act & Assert
         mockMvc.perform(post("/api/v1/usuario/login")
@@ -340,7 +340,7 @@ class UsuarioControllerTest {
                .andExpect(status().isOk())
                .andExpect(content().string("Login exitoso"));
         
-        verify(usuarioService, times(1)).validarCredenciales("testuser", "password123");
+        verify(usuarioService, times(1)).validarCredenciales("test@test.com", "password123");
     }
 
     /**
@@ -352,12 +352,12 @@ class UsuarioControllerTest {
         // Arrange
         String requestBody = """
             {
-                "username": "testuser",
+                "email": "test@test.com",
                 "password": "passwordIncorrecto"
             }
             """;
         
-        when(usuarioService.validarCredenciales("testuser", "passwordIncorrecto")).thenReturn(false);
+        when(usuarioService.validarCredenciales("test@test.com", "passwordIncorrecto")).thenReturn(false);
         
         // Act & Assert
         mockMvc.perform(post("/api/v1/usuario/login")
@@ -366,7 +366,7 @@ class UsuarioControllerTest {
                .andExpect(status().isUnauthorized())
                .andExpect(content().string("Credenciales inválidas"));
         
-        verify(usuarioService, times(1)).validarCredenciales("testuser", "passwordIncorrecto");
+        verify(usuarioService, times(1)).validarCredenciales("test@test.com", "passwordIncorrecto");
     }
 
     /**
@@ -378,7 +378,7 @@ class UsuarioControllerTest {
         // Arrange: Request sin password
         String requestBody = """
             {
-                "username": "testuser"
+                "email": "test@test.com"
             }
             """;
         

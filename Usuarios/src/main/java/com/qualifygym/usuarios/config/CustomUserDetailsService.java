@@ -19,12 +19,13 @@ public class CustomUserDetailsService implements UserDetailsService {
     private UsuarioRepository usuarioRepo;
 
     @Override
-    public UserDetails loadUserByUsername(String username) {
-        Usuario usuario = usuarioRepo.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+    public UserDetails loadUserByUsername(String email) {
+        // Nota: Aunque el método se llama loadUserByUsername, ahora busca por email
+        Usuario usuario = usuarioRepo.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " + email));
 
         return new User(
-                usuario.getUsername(),
+                usuario.getEmail(), // Usar email como identificador de usuario
                 usuario.getPassword(),
                 Collections.singletonList(() -> usuario.getRol().getNombre())
         );
