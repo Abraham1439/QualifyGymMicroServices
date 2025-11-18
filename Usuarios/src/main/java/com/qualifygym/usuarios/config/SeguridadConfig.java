@@ -8,6 +8,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
@@ -22,10 +26,27 @@ public class SeguridadConfig {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*")); // Permitir todos los orígenes
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(false); // No permitir credenciales para endpoints públicos
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // Público - endpoints para login y registro
+                // Permitir peticiones OPTIONS (preflight de CORS) sin autenticación
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                
+                // Público - endpoints para login y registro (sin autenticación)
                 .requestMatchers("/api/v1/usuario/login", 
                                  "/api/v1/usuario/register").permitAll()
                 
@@ -47,8 +68,11 @@ public class SeguridadConfig {
                 // Resto de endpoints requieren autenticación
                 .anyRequest().authenticated()
             )
-            .userDetailsService(customUserDetailsService)
-            .httpBasic(withDefaults());
+            // Configurar HTTP Basic solo para endpoints que requieren autenticación
+            .httpBasic(httpBasic -> httpBasic
+                .realmName("QualifyGym API")
+            )
+            .userDetailsService(customUserDetailsService);
         
         return http.build();
     }
