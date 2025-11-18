@@ -93,6 +93,14 @@ public class UsuarioService {
     }
 
     /**
+     * Obtiene un usuario por su email
+     */
+    public Usuario obtenerUsuarioPorEmail(String email) {
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + email));
+    }
+
+    /**
      * Registro público de usuarios. Crea un nuevo usuario con el rol "Usuario" por defecto.
      * Este método es para registro público, a diferencia de crearUsuario que requiere rol Administrador.
      */
