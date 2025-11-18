@@ -64,6 +64,25 @@ public class UsuarioController {
         }
     }
 
+    @Operation(summary = "Obtener usuario por email", description = "Retorna la información de un usuario específico por su email")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuario encontrado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @GetMapping("/users/email/{email}")
+    public ResponseEntity<?> getUsuarioByEmail(@PathVariable String email) {
+        try {
+            Usuario usuario = usuarioService.obtenerUsuarioPorEmail(email);
+            return ResponseEntity.ok(usuario);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("Error interno: " + e.getMessage());
+        }
+    }
+
     @Operation(summary = "Crear nuevo usuario", description = "Crea un nuevo usuario en el sistema. Requiere autenticación con rol Administrador")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente"),
