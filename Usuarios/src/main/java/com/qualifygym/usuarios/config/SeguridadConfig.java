@@ -47,7 +47,8 @@ public class SeguridadConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
                 // Público - endpoints para login y registro (sin autenticación)
-                .requestMatchers("/api/v1/usuario/login", 
+                // Es importante que estos estén antes de otras reglas
+                .requestMatchers(HttpMethod.POST, "/api/v1/usuario/login", 
                                  "/api/v1/usuario/register").permitAll()
                 
                 // Público - GET para comunicación entre microservicios (solo lectura)
