@@ -91,5 +91,35 @@ public class UsuarioService {
         Optional<Usuario> opt = usuarioRepository.findByUsername(username);
         return opt.isPresent() && passwordEncoder.matches(rawPassword, opt.get().getPassword());
     }
+
+    /**
+     * Registro público de usuarios. Crea un nuevo usuario con el rol "Usuario" por defecto.
+     * Este método es para registro público, a diferencia de crearUsuario que requiere rol Administrador.
+     */
+    public Usuario registrarUsuarioPublico(String username, String password, String email, String phone) {
+        // Validar que el username no esté duplicado
+        if (usuarioRepository.existsByUsername(username)) {
+            throw new RuntimeException("El username ya está registrado: " + username);
+        }
+
+        // Validar que el email no esté duplicado
+        if (usuarioRepository.existsByEmail(email)) {
+            throw new RuntimeException("El email ya está registrado: " + email);
+        }
+
+        // Buscar el rol "Usuario" por defecto
+        Rol rolUsuario = roleRepository.findAll().stream()
+                .filter(rol -> "Usuario".equals(rol.getNombre()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Rol 'Usuario' no encontrado en el sistema"));
+
+        Usuario nuevo = new Usuario();
+        nuevo.setUsername(username);
+        nuevo.setPassword(passwordEncoder.encode(password));
+        nuevo.setEmail(email);
+        nuevo.setPhone(phone);
+        nuevo.setRol(rolUsuario);
+        return usuarioRepository.save(nuevo);
+    }
 }
 

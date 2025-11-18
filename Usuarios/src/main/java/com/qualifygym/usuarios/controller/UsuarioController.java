@@ -156,5 +156,50 @@ public class UsuarioController {
                                  .body("Error interno: " + e.getMessage());
         }
     }
+
+    @Operation(summary = "Registro público de usuario", description = "Permite a cualquier usuario registrarse en el sistema. Asigna automáticamente el rol 'Usuario'. Este endpoint es público y no requiere autenticación.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Usuario registrado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos, faltantes o duplicados (username/email ya existe)"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody Map<String, String> datos) {
+        try {
+            String username = datos.get("username");
+            String password = datos.get("password");
+            String email = datos.get("email");
+            String phone = datos.get("phone");
+
+            // Validar que todos los campos requeridos estén presentes
+            if (username == null || username.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("El campo 'username' es requerido");
+            }
+            if (password == null || password.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("El campo 'password' es requerido");
+            }
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("El campo 'email' es requerido");
+            }
+            if (phone == null || phone.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("El campo 'phone' es requerido");
+            }
+
+            // Crear el usuario con rol "Usuario" por defecto
+            Usuario nuevo = usuarioService.registrarUsuarioPublico(
+                username.trim(), 
+                password, 
+                email.trim(), 
+                phone.trim()
+            );
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("Error interno: " + e.getMessage());
+        }
+    }
 }
 
