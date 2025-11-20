@@ -96,11 +96,18 @@ public class UsuarioService {
     /**
      * Registro público de usuarios. Crea un nuevo usuario con el rol "Usuario" por defecto.
      * Este método es para registro público, a diferencia de crearUsuario que requiere rol Administrador.
+     * 
+     * NOTA: El username puede repetirse (no es único). Solo el email y teléfono deben ser únicos.
      */
     public Usuario registrarUsuarioPublico(String username, String password, String email, String phone) {
-        // Validar que el email no esté duplicado (el email sigue siendo único)
+        // Validar que el email no esté duplicado (el email debe ser único)
         if (usuarioRepository.existsByEmail(email)) {
             throw new RuntimeException("El email ya está registrado: " + email);
+        }
+
+        // Validar que el teléfono no esté duplicado (el teléfono debe ser único)
+        if (usuarioRepository.existsByPhone(phone)) {
+            throw new RuntimeException("El teléfono ya está registrado: " + phone);
         }
 
         // Buscar el rol "Usuario" por defecto
@@ -110,12 +117,26 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Rol 'Usuario' no encontrado en el sistema"));
 
         Usuario nuevo = new Usuario();
-        nuevo.setUsername(username);
+        nuevo.setUsername(username); // El username puede repetirse, no se valida como único
         nuevo.setPassword(passwordEncoder.encode(password));
         nuevo.setEmail(email);
         nuevo.setPhone(phone);
         nuevo.setRol(rolUsuario);
-        return usuarioRepository.save(nuevo);
+        
+        try {
+            return usuarioRepository.save(nuevo);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // Si hay una restricción UNIQUE en la base de datos para username, 
+            // capturamos la excepción y la convertimos en un mensaje más claro
+            String errorMsg = e.getMessage();
+            if (errorMsg != null && errorMsg.contains("username")) {
+                // Si la BD tiene restricción UNIQUE en username, informamos pero permitimos
+                // En este caso, si hay restricción de BD, lanzamos un error genérico
+                throw new RuntimeException("Error al registrar usuario. Verifica que el email y teléfono no estén en uso.");
+            }
+            // Si es otro error de integridad (email o phone), relanzamos
+            throw new RuntimeException("Error al registrar usuario: " + e.getMessage());
+        }
     }
 }
 
