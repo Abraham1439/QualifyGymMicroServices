@@ -126,15 +126,29 @@ public class UsuarioService {
         try {
             return usuarioRepository.save(nuevo);
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
-            // Si hay una restricción UNIQUE en la base de datos para username, 
-            // capturamos la excepción y la convertimos en un mensaje más claro
-            String errorMsg = e.getMessage();
-            if (errorMsg != null && errorMsg.contains("username")) {
-                // Si la BD tiene restricción UNIQUE en username, informamos pero permitimos
-                // En este caso, si hay restricción de BD, lanzamos un error genérico
-                throw new RuntimeException("Error al registrar usuario. Verifica que el email y teléfono no estén en uso.");
+            // Manejar errores de integridad de base de datos
+            String errorMsg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            
+            // Si el error es por username (restricción UNIQUE en BD), 
+            // esto NO debería pasar ya que username puede repetirse
+            // Si ocurre, significa que hay una restricción UNIQUE en la base de datos que debe eliminarse
+            if (errorMsg.contains("username") || errorMsg.contains("uk_username") || 
+                errorMsg.contains("unique") && errorMsg.contains("username")) {
+                throw new RuntimeException(
+                    "Error: La base de datos tiene una restricción UNIQUE en el campo 'username' que debe eliminarse. " +
+                    "El username NO debe ser único. Ejecuta: ALTER TABLE usuarios DROP INDEX nombre_del_indice;"
+                );
             }
-            // Si es otro error de integridad (email o phone), relanzamos
+            
+            // Si el error es por email o phone (que SÍ deben ser únicos), mostrar mensaje específico
+            if (errorMsg.contains("email")) {
+                throw new RuntimeException("El email ya está registrado: " + email);
+            }
+            if (errorMsg.contains("phone") || errorMsg.contains("tel")) {
+                throw new RuntimeException("El teléfono ya está registrado: " + phone);
+            }
+            
+            // Otro error de integridad
             throw new RuntimeException("Error al registrar usuario: " + e.getMessage());
         }
     }

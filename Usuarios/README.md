@@ -26,13 +26,28 @@ Microservicio de gestión de usuarios para la aplicación QualifyGym.
 CREATE DATABASE db_qualifygym_usuarios;
 ```
 
-2. Configurar las credenciales en `src/main/resources/application.properties`:
+2. **IMPORTANTE - Eliminar restricción UNIQUE en username:**
+   
+   El campo `username` NO debe tener una restricción UNIQUE en la base de datos. Solo el `email` y `phone` deben ser únicos.
+   
+   Si la tabla `usuarios` tiene una restricción UNIQUE en `username`, ejecuta:
+   ```sql
+   -- Verificar restricciones
+   SHOW INDEX FROM usuarios WHERE Column_name = 'username' AND Non_unique = 0;
+   
+   -- Eliminar la restricción (ajusta el nombre del índice según el resultado anterior)
+   ALTER TABLE usuarios DROP INDEX nombre_del_indice;
+   ```
+   
+   Ver el archivo `ELIMINAR_RESTRICCION_USERNAME.sql` para más detalles.
+
+3. Configurar las credenciales en `src/main/resources/application.properties`:
 ```properties
 spring.datasource.username=root
 spring.datasource.password=tu_password
 ```
 
-3. El microservicio se ejecutará en el puerto **8081** por defecto.
+4. El microservicio se ejecutará en el puerto **8081** por defecto.
 
 ## Instalación y Ejecución
 
