@@ -19,6 +19,7 @@ public class LoadDatabase {
             // Verificar y crear roles si no existen
             Rol admin = null;
             Rol usuario = null;
+            Rol moderador = null;
             
             if (roleRepo.count() == 0) {
                 admin = new Rol();
@@ -29,7 +30,7 @@ public class LoadDatabase {
                 usuario.setNombre("Usuario");
                 roleRepo.save(usuario);
 
-                Rol moderador = new Rol();
+                moderador = new Rol();
                 moderador.setNombre("Moderador");
                 roleRepo.save(moderador);
             } else {
@@ -38,10 +39,10 @@ public class LoadDatabase {
                     .anyMatch(rol -> "Moderador".equals(rol.getNombre()));
                 
                 if (!existeModerador) {
-                    Rol moderador = new Rol();
+                    moderador = new Rol();
                     moderador.setNombre("Moderador");
                     roleRepo.save(moderador);
-                    System.out.println("✅ Rol 'Moderador' agregado");
+                    System.out.println("Rol 'Moderador' agregado");
                 }
                 
                 // Obtener roles existentes para crear usuarios
@@ -54,10 +55,15 @@ public class LoadDatabase {
                     .filter(rol -> "Usuario".equals(rol.getNombre()))
                     .findFirst()
                     .orElse(null);
+                    
+                moderador = roleRepo.findAll().stream()
+                    .filter(rol -> "Moderador".equals(rol.getNombre()))
+                    .findFirst()
+                    .orElse(null);
             }
 
             // Crear usuarios iniciales solo si no existen
-            if (usuarioRepo.count() == 0 && admin != null && usuario != null) {
+            if (usuarioRepo.count() == 0 && admin != null && usuario != null && moderador != null) {
                 Usuario adminUser = new Usuario();
                 adminUser.setUsername("admin");
                 adminUser.setPassword(encoder.encode("admin123"));
@@ -74,9 +80,32 @@ public class LoadDatabase {
                 normalUser.setRol(usuario);
                 usuarioRepo.save(normalUser);
 
-                System.out.println("✅ Usuarios creados con contraseña encriptada");
+                Usuario moderadorUser = new Usuario();
+                moderadorUser.setUsername("moderador");
+                moderadorUser.setPassword(encoder.encode("moderador123."));
+                moderadorUser.setEmail("moderador@qualifygym.com");
+                moderadorUser.setPhone("555555555");
+                moderadorUser.setRol(moderador);
+                usuarioRepo.save(moderadorUser);
+
+                System.out.println("Usuarios creados con contraseña encriptada");
             } else if (usuarioRepo.count() > 0) {
-                System.out.println("ℹ Datos ya existen. No se cargaron nuevos datos.");
+                // Verificar si existe el usuario moderador de prueba
+                boolean existeModeradorUser = usuarioRepo.findAll().stream()
+                    .anyMatch(u -> "moderador@qualifygym.com".equals(u.getEmail()));
+                
+                if (!existeModeradorUser && moderador != null) {
+                    Usuario moderadorUser = new Usuario();
+                    moderadorUser.setUsername("moderador");
+                    moderadorUser.setPassword(encoder.encode("moderador123"));
+                    moderadorUser.setEmail("moderador@qualifygym.com");
+                    moderadorUser.setPhone("555555555");
+                    moderadorUser.setRol(moderador);
+                    usuarioRepo.save(moderadorUser);
+                    System.out.println("Usuario moderador de prueba creado");
+                } else {
+                    System.out.println("ℹ Datos ya existen. No se cargaron nuevos datos.");
+                }
             }
         };
     }

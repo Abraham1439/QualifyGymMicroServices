@@ -5,7 +5,7 @@ Microservicio de gestión de usuarios para la aplicación QualifyGym.
 ## Características
 
 - ✅ Registro y autenticación de usuarios
-- ✅ Gestión de roles (Administrador, Usuario)
+- ✅ Gestión de roles (Administrador, Usuario, Moderador)
 - ✅ CRUD completo de usuarios
 - ✅ Validación de credenciales con Spring Security
 - ✅ Encriptación de contraseñas con BCrypt
@@ -87,7 +87,7 @@ POST /api/v1/usuario/login
 Content-Type: application/json
 
 {
-  "username": "admin",
+  "email": "admin@qualifygym.com",
   "password": "admin123"
 }
 ```
@@ -107,10 +107,12 @@ Al iniciar la aplicación por primera vez, se crean automáticamente:
 ### Roles
 - **Administrador** (ID: 1)
 - **Usuario** (ID: 2)
+- **Moderador** (ID: 3)
 
 ### Usuarios de Prueba
 - **Admin**: username: `admin`, password: `admin123`, email: `admin@qualifygym.com`
 - **Usuario**: username: `usuario1`, password: `usuario123`, email: `usuario1@qualifygym.com`
+- **Moderador**: username: `moderador`, password: `moderador123`, email: `moderador@qualifygym.com`
 
 ## Estructura del Proyecto
 
