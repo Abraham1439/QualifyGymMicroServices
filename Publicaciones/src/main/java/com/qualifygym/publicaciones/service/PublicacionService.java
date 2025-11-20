@@ -11,6 +11,7 @@ import com.qualifygym.publicaciones.client.TemaClient;
 import com.qualifygym.publicaciones.client.UsuarioClient;
 import com.qualifygym.publicaciones.model.Publicacion;
 import com.qualifygym.publicaciones.repository.PublicacionRepository;
+import com.qualifygym.publicaciones.service.NotificacionService;
 
 import jakarta.transaction.Transactional;
 
@@ -26,6 +27,9 @@ public class PublicacionService {
 
     @Autowired
     private TemaClient temaClient;
+
+    @Autowired
+    private NotificacionService notificacionService;
 
     // Obtener todas las publicaciones
     public List<Publicacion> obtenerTodasPublicaciones() {
@@ -145,7 +149,25 @@ public class PublicacionService {
             existente.setMotivoBaneo(motivoBaneo.trim());
         }
 
-        return publicacionRepository.save(existente);
+        Publicacion publicacionGuardada = publicacionRepository.save(existente);
+
+        // Crear notificación para el usuario dueño de la publicación
+        // El mensaje debe ser proporcionado por el admin/moderador
+        if (motivoBaneo != null && !motivoBaneo.trim().isEmpty()) {
+            try {
+                notificacionService.crearNotificacion(
+                    existente.getUsuarioId(),
+                    existente.getIdPublicacion(),
+                    motivoBaneo.trim()
+                );
+            } catch (Exception e) {
+                // Si falla la creación de la notificación, no falla el ocultamiento de la publicación
+                // Solo se registra el error (en producción se podría usar un logger)
+                System.err.println("Error al crear notificación: " + e.getMessage());
+            }
+        }
+
+        return publicacionGuardada;
     }
 
     // Mostrar publicación (desocultar)
