@@ -11,6 +11,7 @@ import com.qualifygym.comentarios.client.PublicacionClient;
 import com.qualifygym.comentarios.client.UsuarioClient;
 import com.qualifygym.comentarios.model.Comentario;
 import com.qualifygym.comentarios.repository.ComentarioRepository;
+import com.qualifygym.comentarios.service.NotificacionService;
 
 import jakarta.transaction.Transactional;
 
@@ -26,6 +27,9 @@ public class ComentarioService {
 
     @Autowired
     private PublicacionClient publicacionClient;
+
+    @Autowired
+    private NotificacionService notificacionService;
 
     // Obtener todos los comentarios
     public List<Comentario> obtenerTodosComentarios() {
@@ -107,7 +111,25 @@ public class ComentarioService {
             existente.setMotivoBaneo(motivoBaneo.trim());
         }
 
-        return comentarioRepository.save(existente);
+        Comentario comentarioGuardado = comentarioRepository.save(existente);
+
+        // Crear notificación para el usuario dueño del comentario
+        // El mensaje debe ser proporcionado por el admin/moderador
+        if (motivoBaneo != null && !motivoBaneo.trim().isEmpty()) {
+            try {
+                notificacionService.crearNotificacion(
+                    existente.getUsuarioId(),
+                    existente.getIdComentario(),
+                    motivoBaneo.trim()
+                );
+            } catch (Exception e) {
+                // Si falla la creación de la notificación, no falla el ocultamiento del comentario
+                // Solo se registra el error (en producción se podría usar un logger)
+                System.err.println("Error al crear notificación: " + e.getMessage());
+            }
+        }
+
+        return comentarioGuardado;
     }
 
     // Mostrar comentario (desocultar)
