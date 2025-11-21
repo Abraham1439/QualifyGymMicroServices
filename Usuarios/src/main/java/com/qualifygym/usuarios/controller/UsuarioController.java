@@ -226,5 +226,20 @@ public class UsuarioController {
                                  .body("Error interno: " + e.getMessage());
         }
     }
+
+    @Operation(summary = "Verificar si un usuario existe", description = "Retorna true si el usuario existe, false en caso contrario")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Verificación exitosa"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @GetMapping("/usuarios/{id}/existe")
+    public ResponseEntity<Boolean> existeUsuario(@PathVariable Long id) {
+        try {
+            Usuario usuario = usuarioService.obtenerUsuarioPorId(id);
+            return ResponseEntity.ok(usuario != null);
+        } catch (Exception e) {
+            return ResponseEntity.ok(false);
+        }
+    }
 }
 

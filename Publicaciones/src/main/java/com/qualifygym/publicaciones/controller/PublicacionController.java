@@ -251,5 +251,20 @@ public class PublicacionController {
                                  .body("Error al eliminar publicación: " + e.getMessage());
         }
     }
+
+    @Operation(summary = "Verificar si una publicación existe", description = "Retorna true si la publicación existe, false en caso contrario")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Verificación exitosa"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @GetMapping("/existe/{id}")
+    public ResponseEntity<Boolean> existePublicacion(@PathVariable Long id) {
+        try {
+            Optional<Publicacion> publicacion = publicacionService.obtenerPublicacionPorId(id);
+            return ResponseEntity.ok(publicacion.isPresent());
+        } catch (Exception e) {
+            return ResponseEntity.ok(false);
+        }
+    }
 }
 
