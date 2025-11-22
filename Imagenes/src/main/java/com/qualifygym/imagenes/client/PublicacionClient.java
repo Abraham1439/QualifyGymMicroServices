@@ -18,17 +18,18 @@ public class PublicacionClient {
 
     public boolean existePublicacion(Long publicacionId) {
         try {
-            webClient.get()
-                    .uri("/publicaciones/{id}", publicacionId)
+            Boolean existe = webClient.get()
+                    .uri("/existe/{id}", publicacionId)
                     .retrieve()
-                    .bodyToMono(Object.class)
+                    .bodyToMono(Boolean.class)
                     .block();
-            return true;
+            return existe != null && existe;
         } catch (WebClientResponseException.NotFound e) {
             return false;
         } catch (Exception e) {
-            // Si el endpoint no existe, asumir que la publicación existe (para no bloquear)
-            return true;
+            // Si hay un error, loguear y retornar false para evitar subir imágenes a publicaciones inexistentes
+            System.err.println("Error al verificar existencia de publicación ID " + publicacionId + ": " + e.getMessage());
+            return false;
         }
     }
 }

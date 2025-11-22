@@ -36,6 +36,10 @@ public class UsuarioService {
     }
 
     public Usuario crearUsuario(String username, String password, String email, String phone, Long roleId) {
+        return crearUsuario(username, password, email, phone, roleId, null);
+    }
+
+    public Usuario crearUsuario(String username, String password, String email, String phone, Long roleId, String photoUrl) {
         Rol rol = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado ID:" + roleId));
 
@@ -45,10 +49,15 @@ public class UsuarioService {
         nuevo.setEmail(email);
         nuevo.setPhone(phone);
         nuevo.setRol(rol);
+        nuevo.setPhotoUrl(photoUrl);
         return usuarioRepository.save(nuevo);
     }
 
     public Usuario actualizarUsuario(Long id, String username, String password, String email, String phone, Long roleId) {
+        return actualizarUsuario(id, username, password, email, phone, roleId, null);
+    }
+
+    public Usuario actualizarUsuario(Long id, String username, String password, String email, String phone, Long roleId, String photoUrl) {
         Usuario existente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado ID:" + id));
 
@@ -68,6 +77,10 @@ public class UsuarioService {
             Rol rol = roleRepository.findById(roleId)
                     .orElseThrow(() -> new RuntimeException("Rol no encontrado ID:" + roleId));
             existente.setRol(rol);
+        }
+        // Actualizar photoUrl si se proporciona (puede ser null para eliminarlo)
+        if (photoUrl != null || (photoUrl == null && existente.getPhotoUrl() != null)) {
+            existente.setPhotoUrl(photoUrl);
         }
         return usuarioRepository.save(existente);
     }

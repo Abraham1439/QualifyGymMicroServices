@@ -51,5 +51,9 @@ public class Usuario {
     @JsonIgnoreProperties("users")
     @Schema(description = "Rol asignado al usuario", example = "Administrador")
     private Rol rol;
+
+    @Column(name = "photo_url", length = 255, nullable = true)
+    @Schema(description = "ID de la imagen de perfil del microservicio de Imágenes", example = "123")
+    private String photoUrl;
 }
 

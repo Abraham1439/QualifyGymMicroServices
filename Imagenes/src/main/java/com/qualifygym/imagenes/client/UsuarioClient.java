@@ -18,17 +18,18 @@ public class UsuarioClient {
 
     public boolean existeUsuario(Long usuarioId) {
         try {
-            webClient.get()
-                    .uri("/usuarios/{id}/existe", usuarioId)
+            Boolean existe = webClient.get()
+                    .uri("/users/{id}/existe", usuarioId)
                     .retrieve()
                     .bodyToMono(Boolean.class)
                     .block();
-            return true;
+            return existe != null && existe;
         } catch (WebClientResponseException.NotFound e) {
             return false;
         } catch (Exception e) {
-            // Si el endpoint no existe, asumir que el usuario existe (para no bloquear)
-            return true;
+            // Si hay un error, loguear y retornar false para evitar subir imágenes a usuarios inexistentes
+            System.err.println("Error al verificar existencia de usuario ID " + usuarioId + ": " + e.getMessage());
+            return false;
         }
     }
 }
