@@ -74,6 +74,23 @@ class ComentarioControllerTest {
     }
 
     /**
+     * Test: GET /comentarios - Lista vacía
+     * Verifica que el endpoint retorna status 204 cuando no hay comentarios
+     */
+    @Test
+    void obtenerTodosComentarios_conListaVacia_deberiaRetornarStatus204() throws Exception {
+        // Arrange
+        when(comentarioService.obtenerTodosComentarios()).thenReturn(List.of());
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/comentario/comentarios")
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isNoContent());
+
+        verify(comentarioService, times(1)).obtenerTodosComentarios();
+    }
+
+    /**
      * Test: GET /comentarios/{id} - Obtener comentario por ID existente
      * Verifica que el endpoint retorna el comentario con status 200
      */
@@ -298,5 +315,63 @@ class ComentarioControllerTest {
                .andExpect(status().isNoContent());
 
         verify(comentarioService, times(1)).eliminarComentario(id);
+    }
+
+    /**
+     * Test: GET /comentarios/usuario/{id} - Obtener comentarios por usuario
+     * Verifica que el endpoint retorna comentarios de un usuario
+     */
+    @Test
+    void obtenerComentariosPorUsuario_deberiaRetornarListaYStatus200() throws Exception {
+        // Arrange
+        Long usuarioId = 1L;
+        List<Comentario> comentarios = List.of(comentarioTest);
+        when(comentarioService.obtenerComentariosPorUsuario(usuarioId)).thenReturn(comentarios);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/comentario/comentarios/usuario/{usuarioId}", usuarioId)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$[0].usuarioId").value(usuarioId));
+
+        verify(comentarioService, times(1)).obtenerComentariosPorUsuario(usuarioId);
+    }
+
+    /**
+     * Test: GET /comentarios/publicacion/{id}/count - Contar comentarios por publicación
+     * Verifica que el endpoint retorna el conteo de comentarios
+     */
+    @Test
+    void contarComentariosPorPublicacion_deberiaRetornarCantidadYStatus200() throws Exception {
+        // Arrange
+        Long publicacionId = 1L;
+        when(comentarioService.contarComentariosPorPublicacion(publicacionId)).thenReturn(5L);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/comentario/comentarios/publicacion/{publicacionId}/count", publicacionId)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(content().string("5"));
+
+        verify(comentarioService, times(1)).contarComentariosPorPublicacion(publicacionId);
+    }
+
+    /**
+     * Test: GET /comentarios/usuario/{id}/count - Contar comentarios por usuario
+     * Verifica que el endpoint retorna el conteo de comentarios
+     */
+    @Test
+    void contarComentariosPorUsuario_deberiaRetornarCantidadYStatus200() throws Exception {
+        // Arrange
+        Long usuarioId = 1L;
+        when(comentarioService.contarComentariosPorUsuario(usuarioId)).thenReturn(3L);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/comentario/comentarios/usuario/{usuarioId}/count", usuarioId)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(content().string("3"));
+
+        verify(comentarioService, times(1)).contarComentariosPorUsuario(usuarioId);
     }
 }

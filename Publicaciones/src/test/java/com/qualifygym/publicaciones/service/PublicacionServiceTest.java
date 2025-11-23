@@ -232,4 +232,244 @@ class PublicacionServiceTest {
         // Assert
         verify(publicacionRepository, times(1)).deleteById(id);
     }
+
+    /**
+     * Test: Obtener todas las publicaciones
+     * Verifica que el servicio retorna correctamente todas las publicaciones
+     */
+    @Test
+    void obtenerTodasPublicaciones_debeRetornarLista() {
+        // Arrange
+        List<Publicacion> publicaciones = new ArrayList<>();
+        publicaciones.add(publicacionTest);
+        when(publicacionRepository.findAll()).thenReturn(publicaciones);
+        
+        // Act
+        List<Publicacion> resultado = publicacionService.obtenerTodasPublicaciones();
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(publicacionRepository, times(1)).findAll();
+    }
+
+    /**
+     * Test: Obtener publicaciones visibles
+     * Verifica que el servicio retorna solo publicaciones no ocultas
+     */
+    @Test
+    void obtenerPublicacionesVisibles_debeRetornarSoloVisibles() {
+        // Arrange
+        List<Publicacion> publicaciones = new ArrayList<>();
+        publicaciones.add(publicacionTest);
+        when(publicacionRepository.findAllNotOculta()).thenReturn(publicaciones);
+        
+        // Act
+        List<Publicacion> resultado = publicacionService.obtenerPublicacionesVisibles();
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(publicacionRepository, times(1)).findAllNotOculta();
+    }
+
+    /**
+     * Test: Obtener publicaciones por tema
+     * Verifica que el servicio retorna correctamente las publicaciones de un tema
+     */
+    @Test
+    void obtenerPublicacionesPorTema_debeRetornarLista() {
+        // Arrange
+        Long temaId = 1L;
+        List<Publicacion> publicaciones = new ArrayList<>();
+        publicaciones.add(publicacionTest);
+        when(publicacionRepository.findByTemaIdOrderByFechaDesc(temaId)).thenReturn(publicaciones);
+        
+        // Act
+        List<Publicacion> resultado = publicacionService.obtenerPublicacionesPorTema(temaId);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        assertEquals(temaId, resultado.get(0).getTemaId());
+        verify(publicacionRepository, times(1)).findByTemaIdOrderByFechaDesc(temaId);
+    }
+
+    /**
+     * Test: Obtener publicaciones visibles por tema
+     * Verifica que el servicio retorna solo publicaciones visibles de un tema
+     */
+    @Test
+    void obtenerPublicacionesVisiblesPorTema_debeRetornarSoloVisibles() {
+        // Arrange
+        Long temaId = 1L;
+        List<Publicacion> publicaciones = new ArrayList<>();
+        publicaciones.add(publicacionTest);
+        when(publicacionRepository.findByTemaIdAndNotOculta(temaId)).thenReturn(publicaciones);
+        
+        // Act
+        List<Publicacion> resultado = publicacionService.obtenerPublicacionesVisiblesPorTema(temaId);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(publicacionRepository, times(1)).findByTemaIdAndNotOculta(temaId);
+    }
+
+    /**
+     * Test: Obtener publicaciones por usuario
+     * Verifica que el servicio retorna correctamente las publicaciones de un usuario
+     */
+    @Test
+    void obtenerPublicacionesPorUsuario_debeRetornarLista() {
+        // Arrange
+        Long usuarioId = 1L;
+        List<Publicacion> publicaciones = new ArrayList<>();
+        publicaciones.add(publicacionTest);
+        when(publicacionRepository.findByUsuarioIdOrderByFechaDesc(usuarioId)).thenReturn(publicaciones);
+        
+        // Act
+        List<Publicacion> resultado = publicacionService.obtenerPublicacionesPorUsuario(usuarioId);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        assertEquals(usuarioId, resultado.get(0).getUsuarioId());
+        verify(publicacionRepository, times(1)).findByUsuarioIdOrderByFechaDesc(usuarioId);
+    }
+
+    /**
+     * Test: Obtener publicaciones visibles por usuario
+     * Verifica que el servicio retorna solo publicaciones visibles de un usuario
+     */
+    @Test
+    void obtenerPublicacionesVisiblesPorUsuario_debeRetornarSoloVisibles() {
+        // Arrange
+        Long usuarioId = 1L;
+        List<Publicacion> publicaciones = new ArrayList<>();
+        publicaciones.add(publicacionTest);
+        when(publicacionRepository.findByUsuarioIdAndNotOculta(usuarioId)).thenReturn(publicaciones);
+        
+        // Act
+        List<Publicacion> resultado = publicacionService.obtenerPublicacionesVisiblesPorUsuario(usuarioId);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(publicacionRepository, times(1)).findByUsuarioIdAndNotOculta(usuarioId);
+    }
+
+    /**
+     * Test: Buscar publicaciones
+     * Verifica que el servicio busca correctamente publicaciones por texto
+     */
+    @Test
+    void buscarPublicaciones_debeRetornarLista() {
+        // Arrange
+        String query = "test";
+        List<Publicacion> publicaciones = new ArrayList<>();
+        publicaciones.add(publicacionTest);
+        when(publicacionRepository.searchPublicaciones(query)).thenReturn(publicaciones);
+        
+        // Act
+        List<Publicacion> resultado = publicacionService.buscarPublicaciones(query);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(publicacionRepository, times(1)).searchPublicaciones(query);
+    }
+
+    /**
+     * Test: Actualizar imagen de publicación
+     * Verifica que el servicio actualiza correctamente la imagen de una publicación
+     */
+    @Test
+    void actualizarImagenPublicacion_debeRetornarPublicacionActualizada() {
+        // Arrange
+        Long id = 1L;
+        String imageUrl = "https://example.com/image.jpg";
+        publicacionTest.setImageUrl(imageUrl);
+        
+        when(publicacionRepository.findById(id)).thenReturn(Optional.of(publicacionTest));
+        when(publicacionRepository.save(any(Publicacion.class))).thenReturn(publicacionTest);
+        
+        // Act
+        Publicacion resultado = publicacionService.actualizarImagenPublicacion(id, imageUrl);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(imageUrl, resultado.getImageUrl());
+        verify(publicacionRepository, times(1)).findById(id);
+        verify(publicacionRepository, times(1)).save(any(Publicacion.class));
+    }
+
+    /**
+     * Test: Mostrar publicación oculta
+     * Verifica que el servicio muestra una publicación previamente oculta
+     */
+    @Test
+    void mostrarPublicacion_debeMostrarYLimpiarDatosDeBaneo() {
+        // Arrange
+        Long id = 1L;
+        publicacionTest.setOculta(true);
+        publicacionTest.setMotivoBaneo("Motivo anterior");
+        publicacionTest.setFechaBaneo(LocalDateTime.now());
+        
+        when(publicacionRepository.findById(id)).thenReturn(Optional.of(publicacionTest));
+        when(publicacionRepository.save(any(Publicacion.class))).thenAnswer(invocation -> {
+            Publicacion p = invocation.getArgument(0);
+            p.setOculta(false);
+            p.setMotivoBaneo(null);
+            p.setFechaBaneo(null);
+            return p;
+        });
+        
+        // Act
+        Publicacion resultado = publicacionService.mostrarPublicacion(id);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertFalse(resultado.getOculta());
+        assertNull(resultado.getMotivoBaneo());
+        assertNull(resultado.getFechaBaneo());
+        verify(publicacionRepository, times(1)).findById(id);
+        verify(publicacionRepository, times(1)).save(any(Publicacion.class));
+    }
+
+    /**
+     * Test: Contar publicaciones por tema
+     * Verifica que el servicio cuenta correctamente las publicaciones de un tema
+     */
+    @Test
+    void contarPublicacionesPorTema_debeRetornarCantidad() {
+        // Arrange
+        Long temaId = 1L;
+        when(publicacionRepository.countByTemaId(temaId)).thenReturn(5L);
+        
+        // Act
+        long resultado = publicacionService.contarPublicacionesPorTema(temaId);
+        
+        // Assert
+        assertEquals(5L, resultado);
+        verify(publicacionRepository, times(1)).countByTemaId(temaId);
+    }
+
+    /**
+     * Test: Contar publicaciones por usuario
+     * Verifica que el servicio cuenta correctamente las publicaciones de un usuario
+     */
+    @Test
+    void contarPublicacionesPorUsuario_debeRetornarCantidad() {
+        // Arrange
+        Long usuarioId = 1L;
+        when(publicacionRepository.countByUsuarioId(usuarioId)).thenReturn(3L);
+        
+        // Act
+        long resultado = publicacionService.contarPublicacionesPorUsuario(usuarioId);
+        
+        // Assert
+        assertEquals(3L, resultado);
+        verify(publicacionRepository, times(1)).countByUsuarioId(usuarioId);
+    }
 }

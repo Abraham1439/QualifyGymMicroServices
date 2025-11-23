@@ -204,4 +204,67 @@ class EstadoControllerTest {
 
         verify(estadoService, times(1)).eliminarEstado(id);
     }
+
+    /**
+     * Test: GET /estados/nombre/{nombre} - Obtener estado por nombre
+     * Verifica que el endpoint retorna el estado con status 200
+     */
+    @Test
+    void obtenerEstadoPorNombre_conNombreExistente_deberiaRetornarEstadoYStatus200() throws Exception {
+        // Arrange
+        String nombre = "Activo";
+        when(estadoService.obtenerEstadoPorNombre(nombre)).thenReturn(Optional.of(estadoTest));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/estado/estados/nombre/{nombre}", nombre)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.nombre").value("Activo"));
+
+        verify(estadoService, times(1)).obtenerEstadoPorNombre(nombre);
+    }
+
+    /**
+     * Test: GET /estados/existe/{nombre} - Verificar existencia de estado
+     * Verifica que el endpoint retorna true cuando el estado existe
+     */
+    @Test
+    void existeEstadoPorNombre_conNombreExistente_deberiaRetornarTrue() throws Exception {
+        // Arrange
+        String nombre = "Activo";
+        when(estadoService.existePorNombre(nombre)).thenReturn(true);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/estado/estados/existe/{nombre}", nombre)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(content().string("true"));
+
+        verify(estadoService, times(1)).existePorNombre(nombre);
+    }
+
+    /**
+     * Test: POST /estados/obtener-o-crear - Obtener o crear estado
+     * Verifica que el endpoint retorna estado existente o crea uno nuevo
+     */
+    @Test
+    void obtenerOCrearEstado_deberiaRetornarEstadoYStatus200() throws Exception {
+        // Arrange
+        String requestBody = """
+            {
+                "nombre": "Nuevo Estado"
+            }
+            """;
+
+        when(estadoService.obtenerOCrearEstado("Nuevo Estado")).thenReturn(estadoTest);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/estado/estados/obtener-o-crear")
+               .contentType(MediaType.APPLICATION_JSON)
+               .content(requestBody))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.nombre").value("Activo"));
+
+        verify(estadoService, times(1)).obtenerOCrearEstado("Nuevo Estado");
+    }
 }

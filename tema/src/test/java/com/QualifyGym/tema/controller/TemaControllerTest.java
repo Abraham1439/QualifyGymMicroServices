@@ -209,4 +209,102 @@ class TemaControllerTest {
 
         verify(temaService, times(1)).eliminarTema(id);
     }
+
+    /**
+     * Test: GET /temas/estado/{id} - Obtener temas por estado
+     * Verifica que el endpoint retorna temas de un estado
+     */
+    @Test
+    void obtenerTemasPorEstado_deberiaRetornarListaYStatus200() throws Exception {
+        // Arrange
+        Long estadoId = 1L;
+        List<Tema> temas = List.of(temaTest);
+        when(temaService.obtenerTemasPorEstado(estadoId)).thenReturn(temas);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/tema/temas/estado/{estadoId}", estadoId)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$[0].estadoId").value(estadoId));
+
+        verify(temaService, times(1)).obtenerTemasPorEstado(estadoId);
+    }
+
+    /**
+     * Test: GET /temas/buscar - Buscar temas
+     * Verifica que el endpoint busca temas por texto
+     */
+    @Test
+    void buscarTemas_deberiaRetornarListaYStatus200() throws Exception {
+        // Arrange
+        String query = "Fuerza";
+        List<Tema> temas = List.of(temaTest);
+        when(temaService.buscarTemas(query)).thenReturn(temas);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/tema/temas/buscar")
+               .param("query", query)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$[0].nombreTema").value("Rutinas de Fuerza"));
+
+        verify(temaService, times(1)).buscarTemas(query);
+    }
+
+    /**
+     * Test: GET /temas/nombre/{nombre} - Obtener tema por nombre
+     * Verifica que el endpoint retorna el tema con status 200
+     */
+    @Test
+    void obtenerTemaPorNombre_conNombreExistente_deberiaRetornarTemaYStatus200() throws Exception {
+        // Arrange
+        String nombre = "Rutinas de Fuerza";
+        when(temaService.obtenerTemaPorNombre(nombre)).thenReturn(Optional.of(temaTest));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/tema/temas/nombre/{nombre}", nombre)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.nombreTema").value("Rutinas de Fuerza"));
+
+        verify(temaService, times(1)).obtenerTemaPorNombre(nombre);
+    }
+
+    /**
+     * Test: GET /temas/existe/{nombre} - Verificar existencia de tema
+     * Verifica que el endpoint retorna true cuando el tema existe
+     */
+    @Test
+    void existeTemaPorNombre_conNombreExistente_deberiaRetornarTrue() throws Exception {
+        // Arrange
+        String nombre = "Rutinas de Fuerza";
+        when(temaService.existePorNombre(nombre)).thenReturn(true);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/tema/temas/existe/{nombre}", nombre)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(content().string("true"));
+
+        verify(temaService, times(1)).existePorNombre(nombre);
+    }
+
+    /**
+     * Test: GET /temas/estado/{id}/count - Contar temas por estado
+     * Verifica que el endpoint retorna el conteo de temas
+     */
+    @Test
+    void contarTemasPorEstado_deberiaRetornarCantidadYStatus200() throws Exception {
+        // Arrange
+        Long estadoId = 1L;
+        when(temaService.contarTemasPorEstado(estadoId)).thenReturn(5L);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/tema/temas/estado/{estadoId}/count", estadoId)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(content().string("5"));
+
+        verify(temaService, times(1)).contarTemasPorEstado(estadoId);
+    }
 }

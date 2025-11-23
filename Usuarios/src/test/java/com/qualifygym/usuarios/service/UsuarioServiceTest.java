@@ -382,4 +382,129 @@ class UsuarioServiceTest {
         verify(usuarioRepository, times(1)).findByEmail(email);
         verify(passwordEncoder, never()).matches(anyString(), anyString());
     }
+
+    /**
+     * Test: Obtener usuario por email existente
+     * Verifica que el servicio retorna el usuario cuando existe por email
+     */
+    @Test
+    void obtenerUsuarioPorEmail_conEmailExistente_debeRetornarUsuario() {
+        // Arrange
+        String email = "test@test.com";
+        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.of(usuarioTest));
+        
+        // Act
+        Usuario resultado = usuarioService.obtenerUsuarioPorEmail(email);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(email, resultado.getEmail());
+        verify(usuarioRepository, times(1)).findByEmail(email);
+    }
+
+    /**
+     * Test: Obtener usuario por email inexistente
+     * Verifica que el servicio lanza una excepción cuando el usuario no existe
+     */
+    @Test
+    void obtenerUsuarioPorEmail_conEmailInexistente_debeLanzarExcepcion() {
+        // Arrange
+        String email = "noexiste@test.com";
+        when(usuarioRepository.findByEmail(email)).thenReturn(Optional.empty());
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            usuarioService.obtenerUsuarioPorEmail(email);
+        });
+        
+        assertTrue(exception.getMessage().contains("Usuario no encontrado con email"));
+        verify(usuarioRepository, times(1)).findByEmail(email);
+    }
+
+    /**
+     * Test: Registrar usuario público exitosamente
+     * Verifica que el servicio registra un usuario público con rol Usuario por defecto
+     */
+    @Test
+    void registrarUsuarioPublico_conDatosValidos_debeRetornarUsuarioCreado() {
+        // Arrange
+        String username = "nuevoUsuario";
+        String password = "password123";
+        String email = "nuevo@test.com";
+        String phone = "987654321";
+        
+        Rol rolUsuario = new Rol();
+        rolUsuario.setId(2L);
+        rolUsuario.setNombre("Usuario");
+        
+        // Configurar mocks
+        when(usuarioRepository.existsByEmail(email)).thenReturn(false);
+        when(usuarioRepository.existsByPhone(phone)).thenReturn(false);
+        List<Rol> roles = new ArrayList<>();
+        roles.add(rolAdmin);
+        roles.add(rolUsuario);
+        when(roleRepository.findAll()).thenReturn(roles);
+        when(passwordEncoder.encode(password)).thenReturn("encodedPassword");
+        when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> {
+            Usuario usuario = invocation.getArgument(0);
+            usuario.setId(1L);
+            return usuario;
+        });
+        
+        // Act
+        Usuario resultado = usuarioService.registrarUsuarioPublico(username, password, email, phone);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(username, resultado.getUsername());
+        assertEquals(email, resultado.getEmail());
+        assertEquals(phone, resultado.getPhone());
+        assertEquals(rolUsuario, resultado.getRol());
+        
+        verify(usuarioRepository, times(1)).existsByEmail(email);
+        verify(usuarioRepository, times(1)).existsByPhone(phone);
+        verify(passwordEncoder, times(1)).encode(password);
+        verify(usuarioRepository, times(1)).save(any(Usuario.class));
+    }
+
+    /**
+     * Test: Registrar usuario público con email duplicado
+     * Verifica que el servicio lanza una excepción cuando el email ya existe
+     */
+    @Test
+    void registrarUsuarioPublico_conEmailDuplicado_debeLanzarExcepcion() {
+        // Arrange
+        String email = "existente@test.com";
+        when(usuarioRepository.existsByEmail(email)).thenReturn(true);
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            usuarioService.registrarUsuarioPublico("nuevo", "password", email, "123456789");
+        });
+        
+        assertTrue(exception.getMessage().contains("El email ya está registrado"));
+        verify(usuarioRepository, times(1)).existsByEmail(email);
+        verify(usuarioRepository, never()).save(any(Usuario.class));
+    }
+
+    /**
+     * Test: Registrar usuario público con teléfono duplicado
+     * Verifica que el servicio lanza una excepción cuando el teléfono ya existe
+     */
+    @Test
+    void registrarUsuarioPublico_conTelefonoDuplicado_debeLanzarExcepcion() {
+        // Arrange
+        String phone = "123456789";
+        when(usuarioRepository.existsByEmail(anyString())).thenReturn(false);
+        when(usuarioRepository.existsByPhone(phone)).thenReturn(true);
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            usuarioService.registrarUsuarioPublico("nuevo", "password", "nuevo@test.com", phone);
+        });
+        
+        assertTrue(exception.getMessage().contains("El teléfono ya está registrado"));
+        verify(usuarioRepository, times(1)).existsByPhone(phone);
+        verify(usuarioRepository, never()).save(any(Usuario.class));
+    }
 }

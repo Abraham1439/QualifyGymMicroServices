@@ -169,7 +169,7 @@ class UsuarioControllerTest {
         nuevoUsuario.setPhone("987654321");
         nuevoUsuario.setRol(rolAdmin);
         
-        when(usuarioService.crearUsuario("nuevoUsuario", "password123", "nuevo@test.com", "987654321", 1L))
+        when(usuarioService.crearUsuario("nuevoUsuario", "password123", "nuevo@test.com", "987654321", 1L, null))
             .thenReturn(nuevoUsuario);
         
         // Act & Assert
@@ -181,7 +181,7 @@ class UsuarioControllerTest {
                .andExpect(jsonPath("$.username").value("nuevoUsuario"))
                .andExpect(jsonPath("$.email").value("nuevo@test.com"));
         
-        verify(usuarioService, times(1)).crearUsuario("nuevoUsuario", "password123", "nuevo@test.com", "987654321", 1L);
+        verify(usuarioService, times(1)).crearUsuario("nuevoUsuario", "password123", "nuevo@test.com", "987654321", 1L, null);
     }
 
     /**
@@ -205,7 +205,7 @@ class UsuarioControllerTest {
                .andExpect(status().isBadRequest())
                .andExpect(content().string(org.hamcrest.Matchers.containsString("Faltan campos requeridos")));
         
-        verify(usuarioService, never()).crearUsuario(anyString(), anyString(), anyString(), anyString(), anyLong());
+        verify(usuarioService, never()).crearUsuario(anyString(), anyString(), anyString(), anyString(), anyLong(), anyString());
     }
 
     /**
@@ -225,7 +225,7 @@ class UsuarioControllerTest {
             }
             """;
         
-        when(usuarioService.crearUsuario(anyString(), anyString(), anyString(), anyString(), anyLong()))
+        when(usuarioService.crearUsuario(anyString(), anyString(), anyString(), anyString(), anyLong(), anyString()))
             .thenThrow(new RuntimeException("El username ya está registrado: usuarioExistente"));
         
         // Act & Assert
@@ -259,7 +259,7 @@ class UsuarioControllerTest {
         usuarioActualizado.setEmail("actualizado@test.com");
         usuarioActualizado.setPhone("111222333");
         
-        when(usuarioService.actualizarUsuario(eq(id), anyString(), isNull(), anyString(), anyString(), anyLong()))
+        when(usuarioService.actualizarUsuario(eq(id), anyString(), isNull(), anyString(), anyString(), anyLong(), isNull()))
             .thenReturn(usuarioActualizado);
         
         // Act & Assert
@@ -270,7 +270,7 @@ class UsuarioControllerTest {
                .andExpect(jsonPath("$.username").value("usuarioActualizado"))
                .andExpect(jsonPath("$.email").value("actualizado@test.com"));
         
-        verify(usuarioService, times(1)).actualizarUsuario(eq(id), anyString(), isNull(), anyString(), anyString(), anyLong());
+        verify(usuarioService, times(1)).actualizarUsuario(eq(id), anyString(), isNull(), anyString(), anyString(), anyLong(), isNull());
     }
 
     /**
@@ -288,7 +288,7 @@ class UsuarioControllerTest {
             }
             """;
         
-        when(usuarioService.actualizarUsuario(eq(id), anyString(), isNull(), anyString(), isNull(), isNull()))
+        when(usuarioService.actualizarUsuario(eq(id), anyString(), isNull(), anyString(), isNull(), isNull(), isNull()))
             .thenThrow(new RuntimeException("Usuario no encontrado ID:" + id));
         
         // Act & Assert
@@ -387,8 +387,112 @@ class UsuarioControllerTest {
                .contentType(MediaType.APPLICATION_JSON)
                .content(requestBody))
                .andExpect(status().isBadRequest())
-               .andExpect(content().string(org.hamcrest.Matchers.containsString("Faltan campos")));
+               .andExpect(content().string(org.hamcrest.Matchers.containsString("El campo 'password' es requerido")));
         
         verify(usuarioService, never()).validarCredenciales(anyString(), anyString());
+    }
+
+    /**
+     * Test: GET /users/email/{email} - Obtener usuario por email
+     * Verifica que el endpoint retorna el usuario con status 200
+     */
+    @Test
+    void getUsuarioByEmail_conEmailExistente_deberiaRetornarUsuarioYStatus200() throws Exception {
+        // Arrange
+        String email = "test@test.com";
+        when(usuarioService.obtenerUsuarioPorEmail(email)).thenReturn(usuarioTest);
+        
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/usuario/users/email/{email}", email)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.email").value("test@test.com"))
+               .andExpect(jsonPath("$.username").value("testuser"));
+        
+        verify(usuarioService, times(1)).obtenerUsuarioPorEmail(email);
+    }
+
+    /**
+     * Test: POST /register - Registrar usuario público exitosamente
+     * Verifica que el endpoint registra un usuario y retorna status 201
+     */
+    @Test
+    void register_conDatosValidos_deberiaRetornarStatus201() throws Exception {
+        // Arrange
+        String requestBody = """
+            {
+                "username": "nuevoUsuario",
+                "password": "password123",
+                "email": "nuevo@test.com",
+                "phone": "987654321"
+            }
+            """;
+        
+        Usuario nuevoUsuario = new Usuario();
+        nuevoUsuario.setId(2L);
+        nuevoUsuario.setUsername("nuevoUsuario");
+        nuevoUsuario.setEmail("nuevo@test.com");
+        nuevoUsuario.setPhone("987654321");
+        nuevoUsuario.setRol(rolAdmin);
+        
+        when(usuarioService.registrarUsuarioPublico("nuevoUsuario", "password123", "nuevo@test.com", "987654321"))
+            .thenReturn(nuevoUsuario);
+        
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/usuario/register")
+               .contentType(MediaType.APPLICATION_JSON)
+               .content(requestBody))
+               .andExpect(status().isCreated())
+               .andExpect(jsonPath("$.id").value(2L))
+               .andExpect(jsonPath("$.username").value("nuevoUsuario"))
+               .andExpect(jsonPath("$.email").value("nuevo@test.com"));
+        
+        verify(usuarioService, times(1)).registrarUsuarioPublico("nuevoUsuario", "password123", "nuevo@test.com", "987654321");
+    }
+
+    /**
+     * Test: POST /register - Registrar usuario con email duplicado
+     * Verifica que el endpoint retorna status 400 cuando el email ya existe
+     */
+    @Test
+    void register_conEmailDuplicado_deberiaRetornarStatus400() throws Exception {
+        // Arrange
+        String requestBody = """
+            {
+                "username": "nuevoUsuario",
+                "password": "password123",
+                "email": "test@test.com",
+                "phone": "987654321"
+            }
+            """;
+        
+        when(usuarioService.registrarUsuarioPublico(anyString(), anyString(), anyString(), anyString()))
+            .thenThrow(new RuntimeException("El email ya está registrado: test@test.com"));
+        
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/usuario/register")
+               .contentType(MediaType.APPLICATION_JSON)
+               .content(requestBody))
+               .andExpect(status().isBadRequest())
+               .andExpect(content().string(org.hamcrest.Matchers.containsString("El email ya está registrado")));
+    }
+
+    /**
+     * Test: GET /users/{id}/existe - Verificar existencia de usuario
+     * Verifica que el endpoint retorna true cuando el usuario existe
+     */
+    @Test
+    void existeUsuario_conIdExistente_deberiaRetornarTrue() throws Exception {
+        // Arrange
+        Long id = 1L;
+        when(usuarioService.obtenerUsuarioPorId(id)).thenReturn(usuarioTest);
+        
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/usuario/users/{id}/existe", id)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(content().string("true"));
+        
+        verify(usuarioService, times(1)).obtenerUsuarioPorId(id);
     }
 }

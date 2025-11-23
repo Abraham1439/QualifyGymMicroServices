@@ -242,4 +242,77 @@ class EstadoServiceTest {
         // Assert
         verify(estadoRepository, times(1)).deleteById(id);
     }
+
+    /**
+     * Test: Obtener estado por nombre existente
+     * Verifica que el servicio retorna el estado cuando existe por nombre
+     */
+    @Test
+    void obtenerEstadoPorNombre_conNombreExistente_debeRetornarEstado() {
+        // Arrange
+        String nombre = "Activo";
+        when(estadoRepository.findByNombre(nombre)).thenReturn(Optional.of(estadoTest));
+
+        // Act
+        Optional<Estado> resultado = estadoService.obtenerEstadoPorNombre(nombre);
+
+        // Assert
+        assertTrue(resultado.isPresent());
+        assertEquals(nombre, resultado.get().getNombre());
+        verify(estadoRepository, times(1)).findByNombre(nombre);
+    }
+
+    /**
+     * Test: Obtener estado por nombre inexistente
+     * Verifica que el servicio retorna Optional vacío cuando el estado no existe
+     */
+    @Test
+    void obtenerEstadoPorNombre_conNombreInexistente_debeRetornarOptionalVacio() {
+        // Arrange
+        String nombre = "Inexistente";
+        when(estadoRepository.findByNombre(nombre)).thenReturn(Optional.empty());
+
+        // Act
+        Optional<Estado> resultado = estadoService.obtenerEstadoPorNombre(nombre);
+
+        // Assert
+        assertFalse(resultado.isPresent());
+        verify(estadoRepository, times(1)).findByNombre(nombre);
+    }
+
+    /**
+     * Test: Verificar existencia por nombre
+     * Verifica que el servicio retorna true cuando el estado existe
+     */
+    @Test
+    void existePorNombre_conNombreExistente_debeRetornarTrue() {
+        // Arrange
+        String nombre = "Activo";
+        when(estadoRepository.existsByNombre(nombre)).thenReturn(true);
+
+        // Act
+        boolean resultado = estadoService.existePorNombre(nombre);
+
+        // Assert
+        assertTrue(resultado);
+        verify(estadoRepository, times(1)).existsByNombre(nombre);
+    }
+
+    /**
+     * Test: Verificar existencia por nombre inexistente
+     * Verifica que el servicio retorna false cuando el estado no existe
+     */
+    @Test
+    void existePorNombre_conNombreInexistente_debeRetornarFalse() {
+        // Arrange
+        String nombre = "Inexistente";
+        when(estadoRepository.existsByNombre(nombre)).thenReturn(false);
+
+        // Act
+        boolean resultado = estadoService.existePorNombre(nombre);
+
+        // Assert
+        assertFalse(resultado);
+        verify(estadoRepository, times(1)).existsByNombre(nombre);
+    }
 }

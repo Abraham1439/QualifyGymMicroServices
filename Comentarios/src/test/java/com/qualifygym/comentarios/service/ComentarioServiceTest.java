@@ -306,4 +306,108 @@ class ComentarioServiceTest {
         verify(comentarioRepository, times(1))
                 .findByPublicacionIdOrderByFechaRegistroDesc(publicacionId);
     }
+
+    /**
+     * Test: Obtener todos los comentarios
+     * Verifica que el servicio retorna correctamente todos los comentarios
+     */
+    @Test
+    void obtenerTodosComentarios_debeRetornarLista() {
+        // Arrange
+        List<Comentario> comentarios = new ArrayList<>();
+        comentarios.add(comentarioTest);
+        
+        when(comentarioRepository.findAll()).thenReturn(comentarios);
+        
+        // Act
+        List<Comentario> resultado = comentarioService.obtenerTodosComentarios();
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(comentarioRepository, times(1)).findAll();
+    }
+
+    /**
+     * Test: Obtener comentarios visibles por publicación
+     * Verifica que el servicio retorna solo comentarios no ocultos
+     */
+    @Test
+    void obtenerComentariosVisiblesPorPublicacion_debeRetornarSoloVisibles() {
+        // Arrange
+        Long publicacionId = 1L;
+        List<Comentario> comentarios = new ArrayList<>();
+        comentarios.add(comentarioTest);
+        
+        when(comentarioRepository.findByPublicacionIdAndNotOculto(publicacionId))
+                .thenReturn(comentarios);
+        
+        // Act
+        List<Comentario> resultado = comentarioService.obtenerComentariosVisiblesPorPublicacion(publicacionId);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(comentarioRepository, times(1)).findByPublicacionIdAndNotOculto(publicacionId);
+    }
+
+    /**
+     * Test: Obtener comentarios por usuario
+     * Verifica que el servicio retorna correctamente los comentarios de un usuario
+     */
+    @Test
+    void obtenerComentariosPorUsuario_debeRetornarLista() {
+        // Arrange
+        Long usuarioId = 1L;
+        List<Comentario> comentarios = new ArrayList<>();
+        comentarios.add(comentarioTest);
+        
+        when(comentarioRepository.findByUsuarioIdOrderByFechaRegistroDesc(usuarioId))
+                .thenReturn(comentarios);
+        
+        // Act
+        List<Comentario> resultado = comentarioService.obtenerComentariosPorUsuario(usuarioId);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        assertEquals(usuarioId, resultado.get(0).getUsuarioId());
+        verify(comentarioRepository, times(1)).findByUsuarioIdOrderByFechaRegistroDesc(usuarioId);
+    }
+
+    /**
+     * Test: Contar comentarios por publicación
+     * Verifica que el servicio cuenta correctamente los comentarios de una publicación
+     */
+    @Test
+    void contarComentariosPorPublicacion_debeRetornarCantidad() {
+        // Arrange
+        Long publicacionId = 1L;
+        when(comentarioRepository.countByPublicacionId(publicacionId)).thenReturn(5L);
+        
+        // Act
+        long resultado = comentarioService.contarComentariosPorPublicacion(publicacionId);
+        
+        // Assert
+        assertEquals(5L, resultado);
+        verify(comentarioRepository, times(1)).countByPublicacionId(publicacionId);
+    }
+
+    /**
+     * Test: Contar comentarios por usuario
+     * Verifica que el servicio cuenta correctamente los comentarios de un usuario
+     */
+    @Test
+    void contarComentariosPorUsuario_debeRetornarCantidad() {
+        // Arrange
+        Long usuarioId = 1L;
+        when(comentarioRepository.countByUsuarioId(usuarioId)).thenReturn(3L);
+        
+        // Act
+        long resultado = comentarioService.contarComentariosPorUsuario(usuarioId);
+        
+        // Assert
+        assertEquals(3L, resultado);
+        verify(comentarioRepository, times(1)).countByUsuarioId(usuarioId);
+    }
 }

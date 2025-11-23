@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Tests de integración para PublicacionController
@@ -198,5 +199,193 @@ class PublicacionControllerTest {
                .andExpect(status().isNoContent());
 
         verify(publicacionService, times(1)).eliminarPublicacion(id);
+    }
+
+    /**
+     * Test: GET /publicaciones - Obtener todas las publicaciones
+     * Verifica que el endpoint retorna una lista de publicaciones con status 200
+     */
+    @Test
+    void obtenerTodasPublicaciones_deberiaRetornarListaYStatus200() throws Exception {
+        // Arrange
+        List<Publicacion> publicaciones = List.of(publicacionTest);
+        when(publicacionService.obtenerTodasPublicaciones()).thenReturn(publicaciones);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/publicacion/publicaciones")
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$[0].titulo").value("Título de prueba"));
+
+        verify(publicacionService, times(1)).obtenerTodasPublicaciones();
+    }
+
+    /**
+     * Test: GET /publicaciones/{id} - Obtener publicación por ID
+     * Verifica que el endpoint retorna la publicación con status 200
+     */
+    @Test
+    void obtenerPublicacionPorId_conIdExistente_deberiaRetornarPublicacionYStatus200() throws Exception {
+        // Arrange
+        Long id = 1L;
+        when(publicacionService.obtenerPublicacionPorId(id)).thenReturn(Optional.of(publicacionTest));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/publicacion/publicaciones/{id}", id)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.idPublicacion").value(1L))
+               .andExpect(jsonPath("$.titulo").value("Título de prueba"));
+
+        verify(publicacionService, times(1)).obtenerPublicacionPorId(id);
+    }
+
+    /**
+     * Test: GET /publicaciones/usuario/{id} - Obtener publicaciones por usuario
+     * Verifica que el endpoint retorna publicaciones de un usuario
+     */
+    @Test
+    void obtenerPublicacionesPorUsuario_deberiaRetornarListaYStatus200() throws Exception {
+        // Arrange
+        Long usuarioId = 1L;
+        List<Publicacion> publicaciones = List.of(publicacionTest);
+        when(publicacionService.obtenerPublicacionesVisiblesPorUsuario(usuarioId)).thenReturn(publicaciones);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/publicacion/publicaciones/usuario/{usuarioId}", usuarioId)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$[0].usuarioId").value(usuarioId));
+
+        verify(publicacionService, times(1)).obtenerPublicacionesVisiblesPorUsuario(usuarioId);
+    }
+
+    /**
+     * Test: GET /publicaciones/buscar - Buscar publicaciones
+     * Verifica que el endpoint busca publicaciones por texto
+     */
+    @Test
+    void buscarPublicaciones_deberiaRetornarListaYStatus200() throws Exception {
+        // Arrange
+        String query = "test";
+        List<Publicacion> publicaciones = List.of(publicacionTest);
+        when(publicacionService.buscarPublicaciones(query)).thenReturn(publicaciones);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/publicacion/publicaciones/buscar")
+               .param("query", query)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$[0].titulo").value("Título de prueba"));
+
+        verify(publicacionService, times(1)).buscarPublicaciones(query);
+    }
+
+    /**
+     * Test: GET /publicaciones/tema/{id}/count - Contar publicaciones por tema
+     * Verifica que el endpoint retorna el conteo de publicaciones
+     */
+    @Test
+    void contarPublicacionesPorTema_deberiaRetornarCantidadYStatus200() throws Exception {
+        // Arrange
+        Long temaId = 1L;
+        when(publicacionService.contarPublicacionesPorTema(temaId)).thenReturn(5L);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/publicacion/publicaciones/tema/{temaId}/count", temaId)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(content().string("5"));
+
+        verify(publicacionService, times(1)).contarPublicacionesPorTema(temaId);
+    }
+
+    /**
+     * Test: GET /publicaciones/usuario/{id}/count - Contar publicaciones por usuario
+     * Verifica que el endpoint retorna el conteo de publicaciones
+     */
+    @Test
+    void contarPublicacionesPorUsuario_deberiaRetornarCantidadYStatus200() throws Exception {
+        // Arrange
+        Long usuarioId = 1L;
+        when(publicacionService.contarPublicacionesPorUsuario(usuarioId)).thenReturn(3L);
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/publicacion/publicaciones/usuario/{usuarioId}/count", usuarioId)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(content().string("3"));
+
+        verify(publicacionService, times(1)).contarPublicacionesPorUsuario(usuarioId);
+    }
+
+    /**
+     * Test: PUT /publicaciones/{id}/imagen - Actualizar imagen de publicación
+     * Verifica que el endpoint actualiza la imagen y retorna status 200
+     */
+    @Test
+    void actualizarImagenPublicacion_deberiaRetornarStatus200() throws Exception {
+        // Arrange
+        Long id = 1L;
+        String requestBody = """
+            {
+                "imageUrl": "https://example.com/image.jpg"
+            }
+            """;
+
+        publicacionTest.setImageUrl("https://example.com/image.jpg");
+        when(publicacionService.actualizarImagenPublicacion(id, "https://example.com/image.jpg"))
+                .thenReturn(publicacionTest);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/v1/publicacion/publicaciones/{id}/imagen", id)
+               .contentType(MediaType.APPLICATION_JSON)
+               .content(requestBody))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.imageUrl").value("https://example.com/image.jpg"));
+
+        verify(publicacionService, times(1)).actualizarImagenPublicacion(id, "https://example.com/image.jpg");
+    }
+
+    /**
+     * Test: PUT /publicaciones/{id}/mostrar - Mostrar publicación oculta
+     * Verifica que el endpoint muestra una publicación previamente oculta
+     */
+    @Test
+    void mostrarPublicacion_deberiaRetornarStatus200() throws Exception {
+        // Arrange
+        Long id = 1L;
+        publicacionTest.setOculta(false);
+        publicacionTest.setFechaBaneo(null);
+        publicacionTest.setMotivoBaneo(null);
+
+        when(publicacionService.mostrarPublicacion(id)).thenReturn(publicacionTest);
+
+        // Act & Assert
+        mockMvc.perform(put("/api/v1/publicacion/publicaciones/{id}/mostrar", id)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.oculta").value(false));
+
+        verify(publicacionService, times(1)).mostrarPublicacion(id);
+    }
+
+    /**
+     * Test: GET /existe/{id} - Verificar existencia de publicación
+     * Verifica que el endpoint retorna true cuando la publicación existe
+     */
+    @Test
+    void existePublicacion_conIdExistente_deberiaRetornarTrue() throws Exception {
+        // Arrange
+        Long id = 1L;
+        when(publicacionService.obtenerPublicacionPorId(id)).thenReturn(Optional.of(publicacionTest));
+
+        // Act & Assert
+        mockMvc.perform(get("/api/v1/publicacion/existe/{id}", id)
+               .contentType(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(content().string("true"));
+
+        verify(publicacionService, times(1)).obtenerPublicacionPorId(id);
     }
 }

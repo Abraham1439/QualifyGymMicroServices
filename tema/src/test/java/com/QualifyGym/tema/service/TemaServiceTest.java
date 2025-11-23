@@ -213,4 +213,124 @@ class TemaServiceTest {
         // Assert
         verify(temaRepository, times(1)).deleteById(id);
     }
+
+    /**
+     * Test: Obtener temas por estado
+     * Verifica que el servicio retorna correctamente los temas de un estado
+     */
+    @Test
+    void obtenerTemasPorEstado_debeRetornarLista() {
+        // Arrange
+        Long estadoId = 1L;
+        List<Tema> temas = new ArrayList<>();
+        temas.add(temaTest);
+        when(temaRepository.findByEstadoId(estadoId)).thenReturn(temas);
+        
+        // Act
+        List<Tema> resultado = temaService.obtenerTemasPorEstado(estadoId);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        assertEquals(estadoId, resultado.get(0).getEstadoId());
+        verify(temaRepository, times(1)).findByEstadoId(estadoId);
+    }
+
+    /**
+     * Test: Buscar temas por nombre
+     * Verifica que el servicio busca correctamente temas por texto
+     */
+    @Test
+    void buscarTemas_debeRetornarLista() {
+        // Arrange
+        String query = "Fuerza";
+        List<Tema> temas = new ArrayList<>();
+        temas.add(temaTest);
+        when(temaRepository.buscarPorNombre(query)).thenReturn(temas);
+        
+        // Act
+        List<Tema> resultado = temaService.buscarTemas(query);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(temaRepository, times(1)).buscarPorNombre(query);
+    }
+
+    /**
+     * Test: Obtener tema por nombre exacto
+     * Verifica que el servicio retorna el tema cuando existe por nombre
+     */
+    @Test
+    void obtenerTemaPorNombre_conNombreExistente_debeRetornarTema() {
+        // Arrange
+        String nombre = "Rutinas de Fuerza";
+        when(temaRepository.findByNombreTema(nombre)).thenReturn(Optional.of(temaTest));
+        
+        // Act
+        Optional<Tema> resultado = temaService.obtenerTemaPorNombre(nombre);
+        
+        // Assert
+        assertTrue(resultado.isPresent());
+        assertEquals(nombre, resultado.get().getNombreTema());
+        verify(temaRepository, times(1)).findByNombreTema(nombre);
+    }
+
+    /**
+     * Test: Verificar existencia por nombre
+     * Verifica que el servicio retorna true cuando el tema existe
+     */
+    @Test
+    void existePorNombre_conNombreExistente_debeRetornarTrue() {
+        // Arrange
+        String nombre = "Rutinas de Fuerza";
+        when(temaRepository.existsByNombreTema(nombre)).thenReturn(true);
+        
+        // Act
+        boolean resultado = temaService.existePorNombre(nombre);
+        
+        // Assert
+        assertTrue(resultado);
+        verify(temaRepository, times(1)).existsByNombreTema(nombre);
+    }
+
+    /**
+     * Test: Actualizar tema con estado inexistente
+     * Verifica que el servicio lanza una excepción cuando el estado no existe
+     */
+    @Test
+    void actualizarTema_conEstadoInexistente_debeLanzarExcepcion() {
+        // Arrange
+        Long id = 1L;
+        Long estadoIdInexistente = 999L;
+        when(temaRepository.findById(id)).thenReturn(Optional.of(temaTest));
+        when(estadoClient.existeEstado(estadoIdInexistente)).thenReturn(false);
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            temaService.actualizarTema(id, null, estadoIdInexistente);
+        });
+        
+        assertTrue(exception.getMessage().contains("El estado con ID 999 no existe"));
+        verify(estadoClient, times(1)).existeEstado(estadoIdInexistente);
+        verify(temaRepository, never()).save(any(Tema.class));
+    }
+
+    /**
+     * Test: Contar temas por estado
+     * Verifica que el servicio cuenta correctamente los temas de un estado
+     */
+    @Test
+    void contarTemasPorEstado_debeRetornarCantidad() {
+        // Arrange
+        Long estadoId = 1L;
+        when(temaRepository.countByEstadoId(estadoId)).thenReturn(5L);
+        
+        // Act
+        long resultado = temaService.contarTemasPorEstado(estadoId);
+        
+        // Assert
+        assertEquals(5L, resultado);
+        verify(temaRepository, times(1)).countByEstadoId(estadoId);
+    }
 }
