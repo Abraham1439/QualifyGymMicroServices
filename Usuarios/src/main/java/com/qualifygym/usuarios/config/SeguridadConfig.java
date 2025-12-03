@@ -41,13 +41,8 @@ public class SeguridadConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // TEMPORAL: Todos los endpoints son públicos para desarrollo
-                // TODO: Restaurar autenticación en producción
                 .anyRequest().permitAll()
             );
-            // Deshabilitar HTTP Basic temporalmente
-            // .httpBasic(httpBasic -> httpBasic.realmName("QualifyGym API"))
-            // .userDetailsService(customUserDetailsService)
         
         return http.build();
     }
