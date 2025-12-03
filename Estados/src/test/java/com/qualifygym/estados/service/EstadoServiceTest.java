@@ -58,7 +58,8 @@ class EstadoServiceTest {
         guardado.setIdEstado(1L);
         guardado.setNombre(nombre);
 
-        when(estadoRepository.existsByNombre(nombre)).thenReturn(false);
+        // El servicio usa trim() en el nombre
+        when(estadoRepository.existsByNombre(nombre.trim())).thenReturn(false);
         when(estadoRepository.save(any(Estado.class))).thenReturn(guardado);
 
         // Act
@@ -70,7 +71,7 @@ class EstadoServiceTest {
         assertEquals(1L, resultado.getIdEstado());
         
         // Verificar que se validó la existencia y se guardó
-        verify(estadoRepository, times(1)).existsByNombre(nombre);
+        verify(estadoRepository, times(1)).existsByNombre(nombre.trim());
         verify(estadoRepository, times(1)).save(any(Estado.class));
     }
 
@@ -82,7 +83,8 @@ class EstadoServiceTest {
     void crearEstado_conNombreExistente_debeLanzarExcepcion() {
         // Arrange
         String nombre = "Activo";
-        when(estadoRepository.existsByNombre(nombre)).thenReturn(true);
+        // El servicio usa trim() en el nombre
+        when(estadoRepository.existsByNombre(nombre.trim())).thenReturn(true);
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
@@ -90,7 +92,7 @@ class EstadoServiceTest {
         });
         
         assertTrue(exception.getMessage().contains("Ya existe un estado con el nombre"));
-        verify(estadoRepository, times(1)).existsByNombre(nombre);
+        verify(estadoRepository, times(1)).existsByNombre(nombre.trim());
         verify(estadoRepository, never()).save(any(Estado.class));
     }
 
@@ -104,14 +106,15 @@ class EstadoServiceTest {
         String nombre = "Activo";
         Estado existente = new Estado(1L, nombre);
         
-        when(estadoRepository.findByNombre(nombre)).thenReturn(Optional.of(existente));
+        // El servicio usa trim() en el nombre
+        when(estadoRepository.findByNombre(nombre.trim())).thenReturn(Optional.of(existente));
 
         // Act
         Estado resultado = estadoService.obtenerOCrearEstado(nombre);
 
         // Assert
         assertEquals(existente, resultado);
-        verify(estadoRepository, times(1)).findByNombre(nombre);
+        verify(estadoRepository, times(1)).findByNombre(nombre.trim());
         verify(estadoRepository, never()).save(any(Estado.class));
     }
 
@@ -127,8 +130,8 @@ class EstadoServiceTest {
         nuevo.setIdEstado(2L);
         nuevo.setNombre(nombre);
         
-        when(estadoRepository.findByNombre(nombre)).thenReturn(Optional.empty());
-        when(estadoRepository.existsByNombre(nombre)).thenReturn(false);
+        // El servicio usa trim() y solo usa findByNombre, no existsByNombre
+        when(estadoRepository.findByNombre(nombre.trim())).thenReturn(Optional.empty());
         when(estadoRepository.save(any(Estado.class))).thenReturn(nuevo);
 
         // Act
@@ -137,7 +140,7 @@ class EstadoServiceTest {
         // Assert
         assertNotNull(resultado);
         assertEquals(nombre, resultado.getNombre());
-        verify(estadoRepository, times(1)).findByNombre(nombre);
+        verify(estadoRepository, times(1)).findByNombre(nombre.trim());
         verify(estadoRepository, times(1)).save(any(Estado.class));
     }
 
@@ -212,7 +215,8 @@ class EstadoServiceTest {
         
         estadoTest.setNombre(nuevoNombre);
         when(estadoRepository.findById(id)).thenReturn(Optional.of(estadoTest));
-        when(estadoRepository.existsByNombre(nuevoNombre)).thenReturn(false);
+        // El servicio usa findByNombre para verificar duplicados, no existsByNombre
+        when(estadoRepository.findByNombre(nuevoNombre.trim())).thenReturn(Optional.empty());
         when(estadoRepository.save(any(Estado.class))).thenReturn(estadoTest);
 
         // Act
@@ -222,7 +226,7 @@ class EstadoServiceTest {
         assertNotNull(resultado);
         assertEquals(nuevoNombre, resultado.getNombre());
         verify(estadoRepository, times(1)).findById(id);
-        verify(estadoRepository, times(1)).existsByNombre(nuevoNombre);
+        verify(estadoRepository, times(1)).findByNombre(nuevoNombre.trim());
         verify(estadoRepository, times(1)).save(any(Estado.class));
     }
 
@@ -234,12 +238,15 @@ class EstadoServiceTest {
     void eliminarEstado_debeEliminarEstado() {
         // Arrange
         Long id = 1L;
+        // El servicio verifica que el estado existe antes de eliminar
+        when(estadoRepository.existsById(id)).thenReturn(true);
         doNothing().when(estadoRepository).deleteById(id);
 
         // Act
         estadoService.eliminarEstado(id);
 
         // Assert
+        verify(estadoRepository, times(1)).existsById(id);
         verify(estadoRepository, times(1)).deleteById(id);
     }
 
@@ -251,7 +258,8 @@ class EstadoServiceTest {
     void obtenerEstadoPorNombre_conNombreExistente_debeRetornarEstado() {
         // Arrange
         String nombre = "Activo";
-        when(estadoRepository.findByNombre(nombre)).thenReturn(Optional.of(estadoTest));
+        // El servicio usa trim() en el nombre
+        when(estadoRepository.findByNombre(nombre.trim())).thenReturn(Optional.of(estadoTest));
 
         // Act
         Optional<Estado> resultado = estadoService.obtenerEstadoPorNombre(nombre);
@@ -259,7 +267,7 @@ class EstadoServiceTest {
         // Assert
         assertTrue(resultado.isPresent());
         assertEquals(nombre, resultado.get().getNombre());
-        verify(estadoRepository, times(1)).findByNombre(nombre);
+        verify(estadoRepository, times(1)).findByNombre(nombre.trim());
     }
 
     /**
@@ -270,14 +278,15 @@ class EstadoServiceTest {
     void obtenerEstadoPorNombre_conNombreInexistente_debeRetornarOptionalVacio() {
         // Arrange
         String nombre = "Inexistente";
-        when(estadoRepository.findByNombre(nombre)).thenReturn(Optional.empty());
+        // El servicio usa trim() en el nombre
+        when(estadoRepository.findByNombre(nombre.trim())).thenReturn(Optional.empty());
 
         // Act
         Optional<Estado> resultado = estadoService.obtenerEstadoPorNombre(nombre);
 
         // Assert
         assertFalse(resultado.isPresent());
-        verify(estadoRepository, times(1)).findByNombre(nombre);
+        verify(estadoRepository, times(1)).findByNombre(nombre.trim());
     }
 
     /**
@@ -288,14 +297,15 @@ class EstadoServiceTest {
     void existePorNombre_conNombreExistente_debeRetornarTrue() {
         // Arrange
         String nombre = "Activo";
-        when(estadoRepository.existsByNombre(nombre)).thenReturn(true);
+        // El servicio usa trim() en el nombre
+        when(estadoRepository.existsByNombre(nombre.trim())).thenReturn(true);
 
         // Act
         boolean resultado = estadoService.existePorNombre(nombre);
 
         // Assert
         assertTrue(resultado);
-        verify(estadoRepository, times(1)).existsByNombre(nombre);
+        verify(estadoRepository, times(1)).existsByNombre(nombre.trim());
     }
 
     /**
@@ -306,13 +316,54 @@ class EstadoServiceTest {
     void existePorNombre_conNombreInexistente_debeRetornarFalse() {
         // Arrange
         String nombre = "Inexistente";
-        when(estadoRepository.existsByNombre(nombre)).thenReturn(false);
+        // El servicio usa trim() en el nombre
+        when(estadoRepository.existsByNombre(nombre.trim())).thenReturn(false);
 
         // Act
         boolean resultado = estadoService.existePorNombre(nombre);
 
         // Assert
         assertFalse(resultado);
-        verify(estadoRepository, times(1)).existsByNombre(nombre);
+        verify(estadoRepository, times(1)).existsByNombre(nombre.trim());
+    }
+
+    /**
+     * Test: Eliminar estado inexistente
+     * Verifica que el servicio lanza una excepción cuando el estado no existe
+     */
+    @Test
+    void eliminarEstado_conIdInexistente_debeLanzarExcepcion() {
+        // Arrange
+        Long idInexistente = 999L;
+        when(estadoRepository.existsById(idInexistente)).thenReturn(false);
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            estadoService.eliminarEstado(idInexistente);
+        });
+        
+        assertTrue(exception.getMessage().contains("Estado no encontrado ID: " + idInexistente));
+        verify(estadoRepository, times(1)).existsById(idInexistente);
+        verify(estadoRepository, never()).deleteById(anyLong());
+    }
+
+    /**
+     * Test: Actualizar estado inexistente
+     * Verifica que el servicio lanza una excepción cuando el estado no existe
+     */
+    @Test
+    void actualizarEstado_conIdInexistente_debeLanzarExcepcion() {
+        // Arrange
+        Long idInexistente = 999L;
+        when(estadoRepository.findById(idInexistente)).thenReturn(Optional.empty());
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            estadoService.actualizarEstado(idInexistente, "Nuevo nombre");
+        });
+        
+        assertTrue(exception.getMessage().contains("Estado no encontrado ID: " + idInexistente));
+        verify(estadoRepository, times(1)).findById(idInexistente);
+        verify(estadoRepository, never()).save(any(Estado.class));
     }
 }
