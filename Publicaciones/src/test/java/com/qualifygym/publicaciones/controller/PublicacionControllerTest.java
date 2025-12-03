@@ -209,7 +209,8 @@ class PublicacionControllerTest {
     void obtenerTodasPublicaciones_deberiaRetornarListaYStatus200() throws Exception {
         // Arrange
         List<Publicacion> publicaciones = List.of(publicacionTest);
-        when(publicacionService.obtenerTodasPublicaciones()).thenReturn(publicaciones);
+        // El controller usa obtenerPublicacionesVisibles() por defecto (incluirOcultas=false)
+        when(publicacionService.obtenerPublicacionesVisibles()).thenReturn(publicaciones);
 
         // Act & Assert
         mockMvc.perform(get("/api/v1/publicacion/publicaciones")
@@ -217,7 +218,7 @@ class PublicacionControllerTest {
                .andExpect(status().isOk())
                .andExpect(jsonPath("$[0].titulo").value("Título de prueba"));
 
-        verify(publicacionService, times(1)).obtenerTodasPublicaciones();
+        verify(publicacionService, times(1)).obtenerPublicacionesVisibles();
     }
 
     /**
@@ -269,6 +270,7 @@ class PublicacionControllerTest {
         // Arrange
         String query = "test";
         List<Publicacion> publicaciones = List.of(publicacionTest);
+        // El servicio usa trim() en el query
         when(publicacionService.buscarPublicaciones(query)).thenReturn(publicaciones);
 
         // Act & Assert

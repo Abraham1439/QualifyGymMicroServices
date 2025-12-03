@@ -7,6 +7,7 @@ import com.qualifygym.publicaciones.model.Publicacion;
 import com.qualifygym.publicaciones.repository.PublicacionRepository;
 import com.qualifygym.publicaciones.client.UsuarioClient;
 import com.qualifygym.publicaciones.client.TemaClient;
+import com.qualifygym.publicaciones.service.NotificacionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -35,6 +36,9 @@ class PublicacionServiceTest {
 
     @Mock
     private TemaClient temaClient;
+
+    @Mock
+    private NotificacionService notificacionService;
 
     @InjectMocks
     private PublicacionService publicacionService;
@@ -205,6 +209,12 @@ class PublicacionServiceTest {
         
         when(publicacionRepository.findById(id)).thenReturn(Optional.of(publicacionTest));
         when(publicacionRepository.save(any(Publicacion.class))).thenReturn(publicacionTest);
+        // Mock del servicio de notificaciones (el servicio lo llama cuando hay motivo)
+        // El método crearNotificacion retorna Notificacion, no void
+        com.qualifygym.publicaciones.model.Notificacion notificacionMock = 
+            new com.qualifygym.publicaciones.model.Notificacion();
+        when(notificacionService.crearNotificacion(anyLong(), anyLong(), anyString()))
+            .thenReturn(notificacionMock);
         
         // Act
         Publicacion resultado = publicacionService.ocultarPublicacion(id, motivo);
@@ -216,6 +226,11 @@ class PublicacionServiceTest {
         assertNotNull(resultado.getFechaBaneo());
         verify(publicacionRepository, times(1)).findById(id);
         verify(publicacionRepository, times(1)).save(any(Publicacion.class));
+        verify(notificacionService, times(1)).crearNotificacion(
+            publicacionTest.getUsuarioId(),
+            publicacionTest.getIdPublicacion(),
+            motivo.trim()
+        );
     }
 
     /**
@@ -226,12 +241,15 @@ class PublicacionServiceTest {
     void eliminarPublicacion_debeEliminarPublicacion() {
         // Arrange
         Long id = 1L;
+        // El servicio verifica que la publicación existe antes de eliminar
+        when(publicacionRepository.existsById(id)).thenReturn(true);
         doNothing().when(publicacionRepository).deleteById(id);
         
         // Act
         publicacionService.eliminarPublicacion(id);
         
         // Assert
+        verify(publicacionRepository, times(1)).existsById(id);
         verify(publicacionRepository, times(1)).deleteById(id);
     }
 
@@ -371,7 +389,8 @@ class PublicacionServiceTest {
         String query = "test";
         List<Publicacion> publicaciones = new ArrayList<>();
         publicaciones.add(publicacionTest);
-        when(publicacionRepository.searchPublicaciones(query)).thenReturn(publicaciones);
+        // El servicio usa trim() en el query
+        when(publicacionRepository.searchPublicaciones(query.trim())).thenReturn(publicaciones);
         
         // Act
         List<Publicacion> resultado = publicacionService.buscarPublicaciones(query);
@@ -379,7 +398,30 @@ class PublicacionServiceTest {
         // Assert
         assertNotNull(resultado);
         assertEquals(1, resultado.size());
-        verify(publicacionRepository, times(1)).searchPublicaciones(query);
+        verify(publicacionRepository, times(1)).searchPublicaciones(query.trim());
+    }
+
+    /**
+     * Test: Buscar publicaciones con query vacío
+     * Verifica que el servicio retorna todas las publicaciones visibles cuando el query está vacío
+     */
+    @Test
+    void buscarPublicaciones_conQueryVacio_debeRetornarTodasVisibles() {
+        // Arrange
+        String queryVacio = "";
+        List<Publicacion> publicaciones = new ArrayList<>();
+        publicaciones.add(publicacionTest);
+        // Cuando el query está vacío, el servicio retorna findAllNotOculta()
+        when(publicacionRepository.findAllNotOculta()).thenReturn(publicaciones);
+        
+        // Act
+        List<Publicacion> resultado = publicacionService.buscarPublicaciones(queryVacio);
+        
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        verify(publicacionRepository, times(1)).findAllNotOculta();
+        verify(publicacionRepository, never()).searchPublicaciones(anyString());
     }
 
     /**
@@ -473,5 +515,105 @@ class PublicacionServiceTest {
         // Assert
         assertEquals(3L, resultado);
         verify(publicacionRepository, times(1)).countByUsuarioId(usuarioId);
+    }
+
+    /**
+     * Test: Eliminar publicación inexistente
+     * Verifica que el servicio lanza una excepción cuando la publicación no existe
+     */
+    @Test
+    void eliminarPublicacion_conIdInexistente_debeLanzarExcepcion() {
+        // Arrange
+        Long idInexistente = 999L;
+        when(publicacionRepository.existsById(idInexistente)).thenReturn(false);
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            publicacionService.eliminarPublicacion(idInexistente);
+        });
+        
+        assertTrue(exception.getMessage().contains("Publicación no encontrada ID: " + idInexistente));
+        verify(publicacionRepository, times(1)).existsById(idInexistente);
+        verify(publicacionRepository, never()).deleteById(anyLong());
+    }
+
+    /**
+     * Test: Actualizar publicación inexistente
+     * Verifica que el servicio lanza una excepción cuando la publicación no existe
+     */
+    @Test
+    void actualizarPublicacion_conIdInexistente_debeLanzarExcepcion() {
+        // Arrange
+        Long idInexistente = 999L;
+        when(publicacionRepository.findById(idInexistente)).thenReturn(Optional.empty());
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            publicacionService.actualizarPublicacion(idInexistente, "Nuevo título", "Nueva descripción");
+        });
+        
+        assertTrue(exception.getMessage().contains("Publicación no encontrada ID: " + idInexistente));
+        verify(publicacionRepository, times(1)).findById(idInexistente);
+        verify(publicacionRepository, never()).save(any(Publicacion.class));
+    }
+
+    /**
+     * Test: Actualizar imagen de publicación inexistente
+     * Verifica que el servicio lanza una excepción cuando la publicación no existe
+     */
+    @Test
+    void actualizarImagenPublicacion_conIdInexistente_debeLanzarExcepcion() {
+        // Arrange
+        Long idInexistente = 999L;
+        when(publicacionRepository.findById(idInexistente)).thenReturn(Optional.empty());
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            publicacionService.actualizarImagenPublicacion(idInexistente, "https://example.com/image.jpg");
+        });
+        
+        assertTrue(exception.getMessage().contains("Publicación no encontrada ID: " + idInexistente));
+        verify(publicacionRepository, times(1)).findById(idInexistente);
+        verify(publicacionRepository, never()).save(any(Publicacion.class));
+    }
+
+    /**
+     * Test: Ocultar publicación inexistente
+     * Verifica que el servicio lanza una excepción cuando la publicación no existe
+     */
+    @Test
+    void ocultarPublicacion_conIdInexistente_debeLanzarExcepcion() {
+        // Arrange
+        Long idInexistente = 999L;
+        when(publicacionRepository.findById(idInexistente)).thenReturn(Optional.empty());
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            publicacionService.ocultarPublicacion(idInexistente, "Motivo de baneo");
+        });
+        
+        assertTrue(exception.getMessage().contains("Publicación no encontrada ID: " + idInexistente));
+        verify(publicacionRepository, times(1)).findById(idInexistente);
+        verify(publicacionRepository, never()).save(any(Publicacion.class));
+    }
+
+    /**
+     * Test: Mostrar publicación inexistente
+     * Verifica que el servicio lanza una excepción cuando la publicación no existe
+     */
+    @Test
+    void mostrarPublicacion_conIdInexistente_debeLanzarExcepcion() {
+        // Arrange
+        Long idInexistente = 999L;
+        when(publicacionRepository.findById(idInexistente)).thenReturn(Optional.empty());
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            publicacionService.mostrarPublicacion(idInexistente);
+        });
+        
+        assertTrue(exception.getMessage().contains("Publicación no encontrada ID: " + idInexistente));
+        verify(publicacionRepository, times(1)).findById(idInexistente);
+        verify(publicacionRepository, never()).save(any(Publicacion.class));
     }
 }
