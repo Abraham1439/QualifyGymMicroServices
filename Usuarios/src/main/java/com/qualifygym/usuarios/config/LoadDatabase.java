@@ -66,47 +66,32 @@ public class LoadDatabase {
             if (usuarioRepo.count() == 0 && admin != null && usuario != null && moderador != null) {
                 Usuario adminUser = new Usuario();
                 adminUser.setUsername("admin");
-                adminUser.setPassword(encoder.encode("admin123"));
+                adminUser.setPassword(encoder.encode("Admin123."));
                 adminUser.setEmail("admin@qualifygym.com");
                 adminUser.setPhone("123456789");
                 adminUser.setRol(admin);
                 usuarioRepo.save(adminUser);
 
                 Usuario normalUser = new Usuario();
-                normalUser.setUsername("usuario1");
-                normalUser.setPassword(encoder.encode("usuario123"));
-                normalUser.setEmail("usuario1@qualifygym.com");
+                normalUser.setUsername("Victor Rosendo"); //El mejor profre del DUOC :)
+                normalUser.setPassword(encoder.encode("Victor123."));
+                normalUser.setEmail("victor@duocuc.cl");
                 normalUser.setPhone("987654321");
                 normalUser.setRol(usuario);
                 usuarioRepo.save(normalUser);
 
                 Usuario moderadorUser = new Usuario();
                 moderadorUser.setUsername("moderador");
-                moderadorUser.setPassword(encoder.encode("moderador123."));
+                moderadorUser.setPassword(encoder.encode("Moderador123."));
                 moderadorUser.setEmail("moderador@qualifygym.com");
-                moderadorUser.setPhone("555555555");
+                moderadorUser.setPhone("953264879");
                 moderadorUser.setRol(moderador);
                 usuarioRepo.save(moderadorUser);
 
                 System.out.println("Usuarios creados con contraseña encriptada");
-            } else if (usuarioRepo.count() > 0) {
-                // Verificar si existe el usuario moderador de prueba
-                boolean existeModeradorUser = usuarioRepo.findAll().stream()
-                    .anyMatch(u -> "moderador@qualifygym.com".equals(u.getEmail()));
-                
-                if (!existeModeradorUser && moderador != null) {
-                    Usuario moderadorUser = new Usuario();
-                    moderadorUser.setUsername("moderador");
-                    moderadorUser.setPassword(encoder.encode("moderador123"));
-                    moderadorUser.setEmail("moderador@qualifygym.com");
-                    moderadorUser.setPhone("555555555");
-                    moderadorUser.setRol(moderador);
-                    usuarioRepo.save(moderadorUser);
-                    System.out.println("Usuario moderador de prueba creado");
-                } else {
+            } else {
                     System.out.println("ℹ Datos ya existen. No se cargaron nuevos datos.");
                 }
-            }
         };
     }
 }
