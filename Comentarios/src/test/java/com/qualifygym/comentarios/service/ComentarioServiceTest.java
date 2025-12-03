@@ -1,6 +1,8 @@
 package com.qualifygym.comentarios.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 import com.qualifygym.comentarios.model.Comentario;
@@ -273,6 +275,8 @@ class ComentarioServiceTest {
     void eliminarComentario_debeEliminarComentario() {
         // Arrange
         Long id = 1L;
+        // El servicio verifica que El comentario existe antes de eliminar
+        when(comentarioRepository.existsById(id)).thenReturn(true);
         doNothing().when(comentarioRepository).deleteById(id);
         
         // Act
