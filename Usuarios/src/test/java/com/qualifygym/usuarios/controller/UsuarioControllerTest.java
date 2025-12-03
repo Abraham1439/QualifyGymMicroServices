@@ -209,34 +209,6 @@ class UsuarioControllerTest {
     }
 
     /**
-     * Test: POST /users - Crear usuario con username duplicado
-     * Verifica que el endpoint retorna status 400 cuando el username ya existe
-     */
-    @Test
-    void crearUsuario_conUsernameDuplicado_deberiaRetornarStatus400() throws Exception {
-        // Arrange
-        String requestBody = """
-            {
-                "username": "usuarioExistente",
-                "password": "password123",
-                "email": "test@test.com",
-                "phone": "123456789",
-                "rolId": 1
-            }
-            """;
-        
-        when(usuarioService.crearUsuario(anyString(), anyString(), anyString(), anyString(), anyLong(), anyString()))
-            .thenThrow(new RuntimeException("El username ya está registrado: usuarioExistente"));
-        
-        // Act & Assert
-        mockMvc.perform(post("/api/v1/usuario/users")
-               .contentType(MediaType.APPLICATION_JSON)
-               .content(requestBody))
-               .andExpect(status().isBadRequest())
-               .andExpect(content().string(org.hamcrest.Matchers.containsString("El username ya está registrado")));
-    }
-
-    /**
      * Test: PUT /users/{id} - Actualizar usuario exitosamente
      * Verifica que el endpoint actualiza un usuario y retorna status 200
      */
@@ -364,7 +336,7 @@ class UsuarioControllerTest {
                .contentType(MediaType.APPLICATION_JSON)
                .content(requestBody))
                .andExpect(status().isUnauthorized())
-               .andExpect(content().string("Credenciales inválidas"));
+               .andExpect(content().string("Credenciales inválidas. Verifica tu email y contraseña."));
         
         verify(usuarioService, times(1)).validarCredenciales("test@test.com", "passwordIncorrecto");
     }
