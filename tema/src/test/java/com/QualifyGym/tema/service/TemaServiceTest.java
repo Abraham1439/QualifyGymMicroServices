@@ -68,7 +68,8 @@ class TemaServiceTest {
         guardado.setNombreTema(nombreTema);
         guardado.setEstadoId(estadoId);
 
-        when(temaRepository.existsByNombreTema(nombreTema)).thenReturn(false);
+        // El servicio usa trim() en el nombre, así que debemos mockear con el nombre trimmeado
+        when(temaRepository.existsByNombreTema(nombreTema.trim())).thenReturn(false);
         when(temaRepository.save(any(Tema.class))).thenReturn(guardado);
 
         // Act
@@ -81,7 +82,7 @@ class TemaServiceTest {
         
         // Verificar que se validó el estado y se guardó
         verify(estadoClient, times(1)).existeEstado(estadoId);
-        verify(temaRepository, times(1)).existsByNombreTema(nombreTema);
+        verify(temaRepository, times(1)).existsByNombreTema(nombreTema.trim());
         verify(temaRepository, times(1)).save(any(Tema.class));
     }
 
@@ -93,15 +94,19 @@ class TemaServiceTest {
     void crearTema_conNombreExistente_debeLanzarExcepcion() {
         // Arrange
         String nombreTema = "Rutinas de Fuerza";
-        when(temaRepository.existsByNombreTema(nombreTema)).thenReturn(true);
+        Long estadoId = 1L;
+        // El servicio primero valida que el estado existe, luego valida el nombre
+        when(estadoClient.existeEstado(estadoId)).thenReturn(true);
+        when(temaRepository.existsByNombreTema(nombreTema.trim())).thenReturn(true);
 
         // Act & Assert
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            temaService.crearTema(nombreTema, 1L);
+            temaService.crearTema(nombreTema, estadoId);
         });
         
         assertTrue(exception.getMessage().contains("Ya existe un tema con el nombre"));
-        verify(temaRepository, times(1)).existsByNombreTema(nombreTema);
+        verify(estadoClient, times(1)).existeEstado(estadoId);
+        verify(temaRepository, times(1)).existsByNombreTema(nombreTema.trim());
         verify(temaRepository, never()).save(any(Tema.class));
     }
 
@@ -141,6 +146,8 @@ class TemaServiceTest {
         temaTest.setEstadoId(nuevoEstadoId);
         
         when(temaRepository.findById(id)).thenReturn(Optional.of(temaTest));
+        // Mock para verificar que el nuevo nombre no existe (el servicio verifica duplicados)
+        when(temaRepository.findByNombreTema(nuevoNombre.trim())).thenReturn(Optional.empty());
         when(estadoClient.existeEstado(nuevoEstadoId)).thenReturn(true);
         when(temaRepository.save(any(Tema.class))).thenReturn(temaTest);
         
@@ -152,6 +159,7 @@ class TemaServiceTest {
         assertEquals(nuevoNombre, resultado.getNombreTema());
         assertEquals(nuevoEstadoId, resultado.getEstadoId());
         verify(temaRepository, times(1)).findById(id);
+        verify(temaRepository, times(1)).findByNombreTema(nuevoNombre.trim());
         verify(estadoClient, times(1)).existeEstado(nuevoEstadoId);
         verify(temaRepository, times(1)).save(any(Tema.class));
     }
@@ -205,13 +213,36 @@ class TemaServiceTest {
     void eliminarTema_debeEliminarTema() {
         // Arrange
         Long id = 1L;
+        // El servicio verifica que el tema existe antes de eliminar
+        when(temaRepository.existsById(id)).thenReturn(true);
         doNothing().when(temaRepository).deleteById(id);
         
         // Act
         temaService.eliminarTema(id);
         
         // Assert
+        verify(temaRepository, times(1)).existsById(id);
         verify(temaRepository, times(1)).deleteById(id);
+    }
+
+    /**
+     * Test: Eliminar tema inexistente
+     * Verifica que el servicio lanza una excepción cuando el tema no existe
+     */
+    @Test
+    void eliminarTema_conIdInexistente_debeLanzarExcepcion() {
+        // Arrange
+        Long idInexistente = 999L;
+        when(temaRepository.existsById(idInexistente)).thenReturn(false);
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            temaService.eliminarTema(idInexistente);
+        });
+        
+        assertTrue(exception.getMessage().contains("Tema no encontrado ID: " + idInexistente));
+        verify(temaRepository, times(1)).existsById(idInexistente);
+        verify(temaRepository, never()).deleteById(anyLong());
     }
 
     /**
@@ -312,7 +343,28 @@ class TemaServiceTest {
         });
         
         assertTrue(exception.getMessage().contains("El estado con ID 999 no existe"));
+        verify(temaRepository, times(1)).findById(id);
         verify(estadoClient, times(1)).existeEstado(estadoIdInexistente);
+        verify(temaRepository, never()).save(any(Tema.class));
+    }
+
+    /**
+     * Test: Actualizar tema inexistente
+     * Verifica que el servicio lanza una excepción cuando el tema no existe
+     */
+    @Test
+    void actualizarTema_conIdInexistente_debeLanzarExcepcion() {
+        // Arrange
+        Long idInexistente = 999L;
+        when(temaRepository.findById(idInexistente)).thenReturn(Optional.empty());
+        
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            temaService.actualizarTema(idInexistente, "Nuevo Nombre", 1L);
+        });
+        
+        assertTrue(exception.getMessage().contains("Tema no encontrado ID: " + idInexistente));
+        verify(temaRepository, times(1)).findById(idInexistente);
         verify(temaRepository, never()).save(any(Tema.class));
     }
 
