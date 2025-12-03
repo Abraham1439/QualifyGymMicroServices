@@ -110,17 +110,13 @@ public class UsuarioService {
      * Registro público de usuarios. Crea un nuevo usuario con el rol "Usuario" por defecto.
      * Este método es para registro público, a diferencia de crearUsuario que requiere rol Administrador.
      * 
-     * NOTA: El username puede repetirse (no es único). Solo el email y teléfono deben ser únicos.
+     * El username puede repetirse (no es único). Solo el email debe ser único.
+     * El teléfono puede repetirse (no es único).
      */
     public Usuario registrarUsuarioPublico(String username, String password, String email, String phone) {
         // Validar que el email no esté duplicado (el email debe ser único)
         if (usuarioRepository.existsByEmail(email)) {
             throw new RuntimeException("El email ya está registrado: " + email);
-        }
-
-        // Validar que el teléfono no esté duplicado (el teléfono debe ser único)
-        if (usuarioRepository.existsByPhone(phone)) {
-            throw new RuntimeException("El teléfono ya está registrado: " + phone);
         }
 
         // Buscar el rol "Usuario" por defecto
@@ -142,9 +138,7 @@ public class UsuarioService {
             // Manejar errores de integridad de base de datos
             String errorMsg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
             
-            // Si el error es por username (restricción UNIQUE en BD), 
-            // esto NO debería pasar ya que username puede repetirse
-            // Si ocurre, significa que hay una restricción UNIQUE en la base de datos que debe eliminarse
+            
             if (errorMsg.contains("username") || errorMsg.contains("uk_username") || 
                 errorMsg.contains("unique") && errorMsg.contains("username")) {
                 throw new RuntimeException(
@@ -153,12 +147,9 @@ public class UsuarioService {
                 );
             }
             
-            // Si el error es por email o phone (que SÍ deben ser únicos), mostrar mensaje específico
+            // Si el error es por email (que SÍ debe ser único), mostrar mensaje específico
             if (errorMsg.contains("email")) {
                 throw new RuntimeException("El email ya está registrado: " + email);
-            }
-            if (errorMsg.contains("phone") || errorMsg.contains("tel")) {
-                throw new RuntimeException("El teléfono ya está registrado: " + phone);
             }
             
             // Otro error de integridad
