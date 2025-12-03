@@ -142,7 +142,6 @@ class UsuarioServiceTest {
         Long roleId = 1L;
         
         // Configurar mocks
-        when(usuarioRepository.existsByUsername(username)).thenReturn(false);
         when(roleRepository.findById(roleId)).thenReturn(Optional.of(rolAdmin));
         when(passwordEncoder.encode(password)).thenReturn("encodedPassword");
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> {
@@ -162,41 +161,17 @@ class UsuarioServiceTest {
         assertEquals(rolAdmin, resultado.getRol());
         
         // Verificar que se llamaron los métodos necesarios
-        verify(usuarioRepository, times(1)).existsByUsername(username);
+        // Nota: existsByUsername ya no se valida porque el username puede repetirse
         verify(roleRepository, times(1)).findById(roleId);
         verify(passwordEncoder, times(1)).encode(password);
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
     }
 
-    /**
-     * Test: Crear usuario con username duplicado
-     * Verifica que el servicio lanza una excepción cuando el username ya existe
-     */
-    @Test
-    void crearUsuario_conUsernameDuplicado_debeLanzarExcepcion() {
-        // Arrange
-        String username = "usuarioExistente";
-        when(usuarioRepository.existsByUsername(username)).thenReturn(true);
-        
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            usuarioService.crearUsuario(username, "password", "email@test.com", "123456789", 1L);
-        });
-        
-        assertEquals("El username ya está registrado: " + username, exception.getMessage());
-        verify(usuarioRepository, times(1)).existsByUsername(username);
-        verify(usuarioRepository, never()).save(any(Usuario.class));
-    }
-
-    /**
-     * Test: Crear usuario con rol inexistente
-     * Verifica que el servicio lanza una excepción cuando el rol no existe
-     */
     @Test
     void crearUsuario_conRolInexistente_debeLanzarExcepcion() {
         // Arrange
         Long roleIdInexistente = 999L;
-        when(usuarioRepository.existsByUsername(anyString())).thenReturn(false);
+        // Nota: existsByUsername ya no se valida porque el username puede repetirse
         when(roleRepository.findById(roleIdInexistente)).thenReturn(Optional.empty());
         
         // Act & Assert
@@ -227,7 +202,7 @@ class UsuarioServiceTest {
         nuevoRol.setNombre("Usuario");
         
         when(usuarioRepository.findById(id)).thenReturn(Optional.of(usuarioTest));
-        when(usuarioRepository.existsByUsername(nuevoUsername)).thenReturn(false);
+        // Nota: existsByUsername ya no se valida porque el username puede repetirse
         when(roleRepository.findById(nuevoRoleId)).thenReturn(Optional.of(nuevoRol));
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioTest);
         
@@ -439,7 +414,7 @@ class UsuarioServiceTest {
         
         // Configurar mocks
         when(usuarioRepository.existsByEmail(email)).thenReturn(false);
-        when(usuarioRepository.existsByPhone(phone)).thenReturn(false);
+        // Nota: existsByPhone ya no se valida porque el teléfono puede repetirse
         List<Rol> roles = new ArrayList<>();
         roles.add(rolAdmin);
         roles.add(rolUsuario);
@@ -462,7 +437,7 @@ class UsuarioServiceTest {
         assertEquals(rolUsuario, resultado.getRol());
         
         verify(usuarioRepository, times(1)).existsByEmail(email);
-        verify(usuarioRepository, times(1)).existsByPhone(phone);
+        // Nota: existsByPhone ya no se verifica porque el teléfono puede repetirse
         verify(passwordEncoder, times(1)).encode(password);
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
     }
@@ -487,24 +462,4 @@ class UsuarioServiceTest {
         verify(usuarioRepository, never()).save(any(Usuario.class));
     }
 
-    /**
-     * Test: Registrar usuario público con teléfono duplicado
-     * Verifica que el servicio lanza una excepción cuando el teléfono ya existe
-     */
-    @Test
-    void registrarUsuarioPublico_conTelefonoDuplicado_debeLanzarExcepcion() {
-        // Arrange
-        String phone = "123456789";
-        when(usuarioRepository.existsByEmail(anyString())).thenReturn(false);
-        when(usuarioRepository.existsByPhone(phone)).thenReturn(true);
-        
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            usuarioService.registrarUsuarioPublico("nuevo", "password", "nuevo@test.com", phone);
-        });
-        
-        assertTrue(exception.getMessage().contains("El teléfono ya está registrado"));
-        verify(usuarioRepository, times(1)).existsByPhone(phone);
-        verify(usuarioRepository, never()).save(any(Usuario.class));
-    }
 }
