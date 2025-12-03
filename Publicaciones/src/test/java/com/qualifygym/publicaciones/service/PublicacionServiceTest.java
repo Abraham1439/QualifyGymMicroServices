@@ -7,7 +7,6 @@ import com.qualifygym.publicaciones.model.Publicacion;
 import com.qualifygym.publicaciones.repository.PublicacionRepository;
 import com.qualifygym.publicaciones.client.UsuarioClient;
 import com.qualifygym.publicaciones.client.TemaClient;
-import com.qualifygym.publicaciones.service.NotificacionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
